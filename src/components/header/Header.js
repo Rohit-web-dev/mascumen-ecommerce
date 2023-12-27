@@ -5,6 +5,8 @@ import headerImg from '../../../public/assets/images/mascumen.jpeg'
 import Link from 'next/link'
 import { FaBars } from "react-icons/fa6";
 import Navbar from './Navbar';
+import Login from '../auth/Login';
+import Register from '../auth/Register';
 
 const Header = () => {
   const [activeTab, setActiveTab] = useState('tab1');
@@ -25,7 +27,7 @@ const Header = () => {
               <FaBars className="toggler-icon" />
             </button>
             <div className="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-             <Navbar />
+              <Navbar />
             </div>
           </div>
         </nav>
@@ -50,50 +52,12 @@ const Header = () => {
               <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div className="modal-body">
-              <form id="tab1" className={`tab-content ${activeTab === 'tab1' ? 'active-tab' : 'hidden-tab'}`}>
-                <div className="mb-3">
-                  <label for="exampleInputEmail1" className="form-label">Email</label>
-                  <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                    placeholder="Enter Email" />
-                </div>
-                <div className="mb-3">
-                  <label for="exampleInputPassword1" className="form-label">Password</label>
-                  <input type="password" className="form-control" id="exampleInputPassword1" placeholder="Enter password" />
-                </div>
-                <p className="note">*Note: You don't have account please click the signup button</p>
-                <div className="d-flex justify-content-end py-3">
-                  <button type="button" className="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
-                  <button type="submit" className="btn signIn">SignIn</button>
-                </div>
-              </form>
-
-              <form id="tab2" className={`tab-content ${activeTab === 'tab2' ? 'active-tab' : 'hidden-tab'}`}>
-                <div className="mb-3">
-                  <label for="name" className="form-label">Full Name</label>
-                  <input type="text" className="form-control" id="name" placeholder="Enter Full Name" />
-                </div>
-                <div className="mb-3">
-                  <label for="exampleInputEmail1" className="form-label">Email</label>
-                  <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                    placeholder="Enter Email" autoComplete='off' />
-                </div>
-                <div className="mb-3">
-                  <label for="phone" className="form-label">Phone</label>
-                  <input type="number" className="form-control" id="phone" placeholder="Enter Phone Number" />
-                </div>
-                <div className="mb-3">
-                  <label for="pass" className="form-label">Password</label>
-                  <input type="password" className="form-control" id="pass" placeholder="Enter Password" autoComplete='off' />
-                </div>
-                <div className="mb-3">
-                  <label for="cpass" className="form-label">Confirm Password</label>
-                  <input type="password" className="form-control" id="cpass" placeholder="Enter Confirm Password" />
-                </div>
-                <div className="d-flex justify-content-end py-3">
-                  <button type="button" className="btn btn-secondary me-2" data-bs-dismiss="modal">Close</button>
-                  <button type="submit" className="btn signIn">SignUp</button>
-                </div>
-              </form>
+              <div id="tab1" className={`tab-content ${activeTab === 'tab1' ? 'active-tab' : 'hidden-tab'}`}>
+                <Login />
+              </div>
+              <div id="tab2" className={`tab-content ${activeTab === 'tab2' ? 'active-tab' : 'hidden-tab'}`}>
+                <Register />
+              </div>
             </div>
           </div>
         </div>

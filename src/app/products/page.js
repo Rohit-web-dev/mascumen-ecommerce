@@ -16,7 +16,7 @@ import img9 from '../../../public/assets/images/product9.png'
 import img10 from '../../../public/assets/images/product10.png'
 import Image from 'next/image';
 import Banner from '@/components/common/Banner';
-import { account, fetchDataFromAppwrite } from '../../appwrite/config'
+import { account, fetchProductData  } from '../../appwrite/config'
 
 const data = [
   {
@@ -105,25 +105,22 @@ const Products = () => {
 
 
   useEffect(() => {
-    console.log(account);
+    console.log(process.env.NEXT_APPWRITE_URL);
   }, []);
 
-  const [product, setProduct] = useState();
+  const [product, setProduct] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await fetchDataFromAppwrite();
-        console.log("result:",result);
-        setProduct(result);
-      } catch (error) {
-        // Handle error
-        console.log("error:",error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const fetchDataAndDoSomething = async () => {
+    try {
+      const productData = await fetchProductData('658a5a2edc47302eb5d2', '658a5b48aa285b17681b', 'documentId');
+      console.log("Product data:", productData);
+      // Do something with the product data
+    } catch (error) {
+      // Handle error
+    }
+  };
+  
+  fetchDataAndDoSomething();
 
   console.log(product);
 
