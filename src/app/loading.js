@@ -1,6 +1,6 @@
 import styles from "@/app/styles/globals.css"
 
-const loading = () => {
+const Loader = () => {
   return (
     <section className="loading_section">
       <div className="loading">
@@ -9,4 +9,4 @@ const loading = () => {
   )
 }
 
-export default loading
+export default Loader

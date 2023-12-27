@@ -6,15 +6,27 @@ import { FaEye, FaStar, FaCartPlus, FaSearch } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
 import { fetchProducts } from '@/appwrite/config';
+import Loader from '../loading';
 
 const Products = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProducts().then((data) => setProducts(data));
+    setLoading(true);
+
+    fetchProducts()
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      });
   }, []);
 
   // Filtered and paginated data
@@ -57,37 +69,41 @@ const Products = () => {
                 <FaSearch className="search-icon" />
               </div>
             </div>
-
-            {/* Display products */}
-            {currentItems.map((item) => (
-              <div key={item?.$id} className="col-lg-3 col-md-6 my-1">
-                <div className="item">
-                  <div className="thumb">
-                    <div className="hover-content">
-                      <ul>
-                        <li><Link href={`products/${item?.$id}`}><FaEye className="icon" /></Link></li>
-                        <li><Link href="/"><FaStar className="icon" /></Link></li>
-                        <li><Link href="cart"><FaCartPlus className="icon" /></Link></li>
-                      </ul>
+            {loading && <Loader />}
+            {!loading && (
+              <>
+                {/* Display products */}
+                {currentItems.map((item) => (
+                  <div key={item?.$id} className="col-lg-3 col-md-6 my-1">
+                    <div className="item">
+                      <div className="thumb">
+                        <div className="hover-content">
+                          <ul>
+                            <li><Link href={`/products/${item?.$id}`}><FaEye className="icon" /></Link></li>
+                            <li><Link href="/wishlist"><FaStar className="icon" /></Link></li>
+                            <li><Link href="/cart"><FaCartPlus className="icon" /></Link></li>
+                          </ul>
+                        </div>
+                        <img src={item?.img} />
+                      </div>
+                      <div className="down-content">
+                        <h4>{item?.title}</h4>
+                        <div className="d-flex justify-content-between">
+                          <span>${item?.price}</span>
+                          <ul className="stars">
+                            <li><FaStar className="icon" /></li>
+                            <li><FaStar className="icon" /></li>
+                            <li><FaStar className="icon" /></li>
+                            <li><FaStar className="icon" /></li>
+                            <li><FaStar className="icon" /></li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
-                    <img src={item?.img} />
                   </div>
-                  <div className="down-content">
-                    <h4>{item?.title}</h4>
-                    <div className="d-flex justify-content-between">
-                      <span>${item?.price}</span>
-                      <ul className="stars">
-                        <li><FaStar className="icon" /></li>
-                        <li><FaStar className="icon" /></li>
-                        <li><FaStar className="icon" /></li>
-                        <li><FaStar className="icon" /></li>
-                        <li><FaStar className="icon" /></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                ))}
+              </>
+            )}
 
             {/* Pagination */}
             <div className="col-lg-12">

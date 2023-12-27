@@ -173,6 +173,11 @@ Products
   color: var(--bs-red);
 }
 
+.products-carousel .item .thumb img {
+  height: 250px;
+  object-fit: cover;
+}
+
 .products-carousel .item .thumb .hover-content {
   position: absolute;
   z-index: 2;
@@ -205,12 +210,13 @@ Products
   text-align: center;
   line-height: 50px;
   display: inline-block;
-  color: var(--bs-around-black);
-  background-color: var(--bs-white);
+  color: var(--bs-white);
+  background-color: #FF9800;
+  transition: 0.6s ease;
 }
 
-.products-carousel .item .thumb .hover-content ul li a .icon {
-  color: var(--bs-around-black);
+.products-carousel .item .thumb .hover-content ul li a:hover {
+  color: var(--bs-around-black) !important;
 }
 
 .products-carousel .dZkckO {
@@ -858,7 +864,7 @@ Products Page
   line-height: 50px;
   display: inline-block;
   color: var(--bs-white);
-  background-color: var(--bs-red);
+  background-color: #FF9800;;
   transition: 0.6s ease;
 }
 
