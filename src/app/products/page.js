@@ -5,49 +5,27 @@ import "@/app/styles/style.css"
 import { FaEye, FaStar, FaCartPlus, FaSearch } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { Client, Databases } from "appwrite";
-
-const client = new Client()
-  .setEndpoint("https://cloud.appwrite.io/v1")
-  .setProject("65855c8c96ca1d4be76e")
+import { fetchProducts } from '@/appwrite/config';
 
 const Products = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-   const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([]);
 
-   useEffect(() => {
-     const databases = new Databases(client);
- 
-     let promise = databases.listDocuments("658a5a2edc47302eb5d2", "658a5b48aa285b17681b",);
- 
-     promise.then(function (response) {
-       console.log(response);
-       setProducts(response.documents)
-     }, function (error) {
-       console.log(error);
-     });
-   }, [])
-
-
-
-  const itemsPerPage = 4;
+  useEffect(() => {
+    fetchProducts().then((data) => setProducts(data));
+  }, []);
 
   // Filtered and paginated data
+  const itemsPerPage = 4;
   const filteredData = products.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-
- 
-
 
   return (
     <>
