@@ -783,14 +783,15 @@ Products Page
 }
 
 .products-sec .item {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   min-height: 350px;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 }
 
 .products-sec .item .thumb img {
   width: 100%;
-  overflow: hidden;
+  height: 250px;
+  object-fit: cover;
 }
 
 .products-sec .item .down-content {
@@ -842,6 +843,7 @@ Products Page
 
 .products-sec .item .thumb {
   position: relative;
+  padding: 10px;
 }
 
 .products-sec .item .thumb .hover-content ul li {
@@ -855,13 +857,18 @@ Products Page
   text-align: center;
   line-height: 50px;
   display: inline-block;
-  color: var(--bs-around-black);
-  background-color: var(--bs-white);
+  color: var(--bs-white);
+  background-color: var(--bs-red);
+  transition: 0.6s ease;
 }
 
-.products-sec .item .thumb .hover-content ul li a .icon {
-  color: var(--bs-around-black);
+.products-sec .item .thumb .hover-content ul li a:hover {
+  color: var(--bs-around-black) !important;
 }
+
+/* .products-sec .item .thumb .hover-content ul li a .icon {
+  color: var(--bs-around-black);
+} */
 
 .products-sec .pagination {
   margin-top: 30px;
