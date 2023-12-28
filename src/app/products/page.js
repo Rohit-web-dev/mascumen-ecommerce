@@ -30,7 +30,7 @@ const Products = () => {
   }, []);
 
   // Filtered and paginated data
-  const itemsPerPage = 4;
+  const itemsPerPage = 12;
   const filteredData = products.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );

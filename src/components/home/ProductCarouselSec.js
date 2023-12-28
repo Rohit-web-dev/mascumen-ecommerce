@@ -1,29 +1,11 @@
 "use client"
-import { useState, useEffect } from 'react';
 import Link from "next/link";
 import "@/app/styles/style.css"
 import Carousel from 'better-react-carousel'
 import { FaEye, FaStar, FaCartPlus } from "react-icons/fa";
-import { fetchProducts } from "@/appwrite/config";
-import Loader from '@/app/loading';
+import Loader from "@/app/loading";
 
-const ProductCarouselSec = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-
-    fetchProducts()
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching products:', error);
-        setLoading(false);
-      });
-  }, []);
+const ProductCarouselSec = ({ loading, products, category }) => {
 
   const responsiveLayout = [
     {
@@ -36,6 +18,9 @@ const ProductCarouselSec = () => {
     },
   ]
 
+  // Filter products based on the category
+  const filteredProducts = category ? products.filter(item => item.category === category) : products;
+
   return (
     <>
       <section className="section products-carousel">
@@ -43,8 +28,8 @@ const ProductCarouselSec = () => {
         {!loading && (
           <Carousel cols={5} rows={1} gap={10} responsiveLayout={responsiveLayout}>
             {
-              products.map((item) => (
-                <Carousel.Item key={item?.id}>
+              filteredProducts && filteredProducts.map((item) => (
+                <Carousel.Item key={item?.$id}>
                   <div className="item">
                     <div className="thumb">
                       <div className="hover-content">

@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaStar } from "react-icons/fa6";
 import "@/app/styles/style.css"
 import Carousel from 'better-react-carousel'
@@ -13,6 +13,7 @@ import img5 from '../../../../public/assets/images/product5.png'
 import img6 from '../../../../public/assets/images/product6.png'
 import ProductCarouselSec from '@/components/home/ProductCarouselSec';
 import Banner from '@/components/common/Banner';
+import { fetchProducts, fetchProductDetails } from '@/appwrite/config';
 
 const data = [
   {
@@ -42,12 +43,51 @@ const data = [
 ]
 
 const ProductDetails = ({ params }) => {
-  const id = params.id
+  const id = params?.id
   const [mainImageUrl, setMainImageUrl] = useState(img1);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+
+    fetchProducts()
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      });
+  }, []);
 
   const changeImage = (imageUrl) => {
     setMainImageUrl(imageUrl);
   };
+
+  const [productDetails, setProductDetails] = useState(null);
+
+  useEffect(() => {
+    console.log('Current id:', id); // Log the current value of id
+
+    const fetchData = async () => {
+      if (id) {
+        try {
+          const response = await fetchProductDetails(id);
+          console.log('Response from fetchProductDetails:', response); // Log the response
+          setProductDetails(response);
+          // Set main image or perform other operations based on the fetched data
+        } catch (error) {
+          console.error('Error fetching product details:', error);
+        }
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  console.log(productDetails);
 
   const responsiveLayout = [
     {
@@ -197,11 +237,11 @@ const ProductDetails = ({ params }) => {
 
       {/* -- Similar Products --  */}
       <div class="container-fluid pt-5 ps-3"><h2 class="section-heading">Similar Products</h2></div>
-      <ProductCarouselSec />
+      <ProductCarouselSec loading={loading} products={products} />
 
       {/* -- People also viewed --  */}
       <div class="container-fluid pt-5 ps-3"><h2 class="section-heading">People also viewed</h2></div>
-      <ProductCarouselSec />
+      <ProductCarouselSec loading={loading} products={products} />
     </>
   )
 }
