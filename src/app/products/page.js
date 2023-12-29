@@ -39,6 +39,16 @@ const Products = () => {
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // -- product rating color -- 
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      const starColor = i <= rating ? '#fe696a' : '#a1a1a1';
+      stars?.push(<FaStar key={i} className="star-icon" style={{ color: starColor }} />);
+    }
+    return stars;
+  };
+
   return (
     <>
       {/* -- banner --  */}
@@ -89,13 +99,9 @@ const Products = () => {
                       <div className="down-content">
                         <h4>{item?.title}</h4>
                         <div className="d-flex justify-content-between">
-                          <span>${item?.price}</span>
+                          <span>₹{item?.price}</span>
                           <ul className="stars">
-                            <li><FaStar className="icon" /></li>
-                            <li><FaStar className="icon" /></li>
-                            <li><FaStar className="icon" /></li>
-                            <li><FaStar className="icon" /></li>
-                            <li><FaStar className="icon" /></li>
+                            <li>{renderStars(item?.rating)}</li>
                           </ul>
                         </div>
                       </div>

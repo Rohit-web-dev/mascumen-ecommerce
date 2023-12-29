@@ -472,8 +472,8 @@ footer .copyright {
   height: 0;
   margin: 8px;
   box-sizing: border-box;
-  border: 32px solid #e50914;
-  border-color: #e50914 transparent #e50914 transparent;
+  border: 32px solid var(--bs-red);
+  border-color: var(--bs-red) transparent var(--bs-red) transparent;
   animation: loading 1.2s infinite;
 }
 

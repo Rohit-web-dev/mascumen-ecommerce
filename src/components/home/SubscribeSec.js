@@ -7,8 +7,8 @@ const SubscribeSec = () => {
       <div className="container">
         <div className="row">
           <div className="col-lg-8 my-2">
-            <h2 class="section-heading">By Subscribing To Our Newsletter You Can Get 30% Off</h2>
-            <p class="section-para">Details to details is what makes mascumen different from the others.</p>
+            <h2 className="section-heading">By Subscribing To Our Newsletter You Can Get 30% Off</h2>
+            <p className="section-para">Details to details is what makes mascumen different from the others.</p>
             <form id="subscribe" action="" method="get">
               <div className="row">
                 <div className="col-lg-5 my-2">

@@ -5,24 +5,24 @@ const Register = () => {
     <>
       <form>
         <div className="mb-3">
-          <label for="name" className="form-label">Full Name</label>
+          <label htmlFor="name" className="form-label">Full Name</label>
           <input type="text" className="form-control" id="name" placeholder="Enter Full Name" />
         </div>
         <div className="mb-3">
-          <label for="exampleInputEmail1" className="form-label">Email</label>
+          <label htmlFor="exampleInputEmail1" className="form-label">Email</label>
           <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
             placeholder="Enter Email" autoComplete='off' />
         </div>
         <div className="mb-3">
-          <label for="phone" className="form-label">Phone</label>
+          <label htmlFor="phone" className="form-label">Phone</label>
           <input type="number" className="form-control" id="phone" placeholder="Enter Phone Number" />
         </div>
         <div className="mb-3">
-          <label for="pass" className="form-label">Password</label>
+          <label htmlFor="pass" className="form-label">Password</label>
           <input type="password" className="form-control" id="pass" placeholder="Enter Password" autoComplete='off' />
         </div>
         <div className="mb-3">
-          <label for="cpass" className="form-label">Confirm Password</label>
+          <label htmlFor="cpass" className="form-label">Confirm Password</label>
           <input type="password" className="form-control" id="cpass" placeholder="Enter Confirm Password" />
         </div>
         <div className="d-flex justify-content-end py-3">

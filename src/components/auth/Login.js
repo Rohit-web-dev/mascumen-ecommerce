@@ -5,12 +5,12 @@ const Login = () => {
     <>
       <form>
         <div className="mb-3">
-          <label for="exampleInputEmail1" className="form-label">Email</label>
+          <label htmlFor="exampleInputEmail1" className="form-label">Email</label>
           <input type="email" className="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
             placeholder="Enter Email" />
         </div>
         <div className="mb-3">
-          <label for="exampleInputPassword1" className="form-label">Password</label>
+          <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
           <input type="password" className="form-control" id="exampleInputPassword1" placeholder="Enter password" />
         </div>
         <p className="note">*Note: You don't have account please click the signup button</p>

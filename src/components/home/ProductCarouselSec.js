@@ -21,6 +21,16 @@ const ProductCarouselSec = ({ loading, products, category }) => {
   // Filter products based on the category
   const filteredProducts = category ? products.filter(item => item.category === category) : products;
 
+  // -- product rating color -- 
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      const starColor = i <= rating ? '#fe696a' : '#a1a1a1';
+      stars?.push(<FaStar key={i} className="star-icon" style={{ color: starColor }} />);
+    }
+    return stars;
+  };
+
   return (
     <>
       <section className="section products-carousel">
@@ -44,13 +54,9 @@ const ProductCarouselSec = ({ loading, products, category }) => {
                     <div className="down-content">
                       <h4>{item?.title}</h4>
                       <div className="d-flex justify-content-between">
-                        <span>${item?.price}</span>
+                        <span>₹{item?.price}</span>
                         <ul className="stars">
-                          <li><FaStar className="icon" /></li>
-                          <li><FaStar className="icon" /></li>
-                          <li><FaStar className="icon" /></li>
-                          <li><FaStar className="icon" /></li>
-                          <li><FaStar className="icon" /></li>
+                          <li>{renderStars(item?.rating)}</li>
                         </ul>
                       </div>
                     </div>

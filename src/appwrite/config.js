@@ -19,19 +19,18 @@ export const fetchProducts = async () => {
 };
 
 // -- get product details -- 
-export const fetchProductDetails = async (productId) => {
+export const fetchProductDetailsById = async (id) => {
   try {
     const response = await databases.listDocuments(
-      '658a5a2edc47302eb5d2',
-      '658a5b48aa285b17681b',
+      "658a5a2edc47302eb5d2",
+      "658a5b48aa285b17681b",
       [
-        Query.equal('productId', productId)
+        Query.equal('$id', id)
       ]
     );
-    console.log(response);
-    return response.documents[productId];
+    return response.documents[0];
   } catch (error) {
-    console.log(error);
-    return {};
+    console.error('Error fetching product details:', error);
+    return null;
   }
 };

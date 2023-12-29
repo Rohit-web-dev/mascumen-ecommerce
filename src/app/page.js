@@ -31,31 +31,31 @@ export default function Home() {
       <BannerSec />
 
       {/* -- Shirts For Girls Products --  */}
-      <div class="container-fluid pt-5 ps-3"><h2 class="section-heading">Shirts For Girls</h2></div>
+      <div className="container-fluid pt-5 ps-3"><h2 className="section-heading">Shirts For Girls</h2></div>
       <ProductCarouselSec loading={loading} products={products} category="shirts" />
 
       {/* -- Shoes for men and women Products --  */}
-      <div class="container-fluid pt-5 ps-3"><h2 class="section-heading">Shoes for men and women</h2></div>
+      <div className="container-fluid pt-5 ps-3"><h2 className="section-heading">Shoes for men and women</h2></div>
       <ProductCarouselSec loading={loading} products={products} category="shoes" />
 
       {/* -- Watches for men and women Products --  */}
-      <div class="container-fluid pt-5 ps-3">
-        <h2 class="section-heading">Watches for men and women</h2>
-        <p class="section-para">Details to details is what makes mascumen different from the others.</p>
+      <div className="container-fluid pt-5 ps-3">
+        <h2 className="section-heading">Watches for men and women</h2>
+        <p className="section-para">Details to details is what makes mascumen different from the others.</p>
       </div>
       <ProductCarouselSec loading={loading} products={products} category="watch" />
 
       {/* -- Dulhan Sarees Products --  */}
-      <div class="container-fluid pt-5 ps-3">
-        <h2 class="section-heading">Dulhan Sarees</h2>
-        <p class="section-para">all type of dulhan sarees available here</p>
+      <div className="container-fluid pt-5 ps-3">
+        <h2 className="section-heading">Dulhan Sarees</h2>
+        <p className="section-para">all type of dulhan sarees available here</p>
       </div>
       <ProductCarouselSec loading={loading} products={products} category="saree" />
 
       {/* -- All type of Items Products --  */}
-      <div class="container-fluid pt-5 ps-3">
-        <h2 class="section-heading">All type of Products</h2>
-        <p class="section-para">There are all type of items</p>
+      <div className="container-fluid pt-5 ps-3">
+        <h2 className="section-heading">All type of Products</h2>
+        <p className="section-para">There are all type of items</p>
       </div>
       <ProductCarouselSec loading={loading} products={products} />
 
@@ -63,9 +63,9 @@ export default function Home() {
       <ExploreProductSec />
 
       {/* -- Social Media --  */}
-      <div class="container-fluid pt-5 ps-3">
-        <h2 class="section-heading">Social Media</h2>
-        <p class="section-para">Details to details is what makes Mascumen different from the others.</p>
+      <div className="container-fluid pt-5 ps-3">
+        <h2 className="section-heading">Social Media</h2>
+        <p className="section-para">Details to details is what makes Mascumen different from the others.</p>
       </div>
       <SocialMediaSec />
 

@@ -35,7 +35,7 @@ const Header = () => {
       <div className="header-blank"></div>
 
       {/* -- signIn & signUp Modal -- */}
-      <div className="modal fade" id="signIn" tabindex="-1" aria-hidden="true">
+      <div className="modal fade" id="signIn" tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">

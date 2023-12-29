@@ -864,7 +864,8 @@ Products Page
   line-height: 50px;
   display: inline-block;
   color: var(--bs-white);
-  background-color: #FF9800;;
+  background-color: #FF9800;
+  ;
   transition: 0.6s ease;
 }
 
@@ -947,12 +948,15 @@ Product Details Page
 #main-image-container {
   margin-bottom: 10px;
 }
+
 #main-image-container img {
-  height: auto;
+  height: 500px;
+  object-fit: cover;
 }
 
 .product-det-section .item .thumb img {
-  height: auto;
+  height: 70px;
+  object-fit: cover;
 }
 
 .hover-container {
@@ -1015,8 +1019,15 @@ Product Details Page
 .product-description {
   font-weight: 300;
   opacity: 0.9;
-  margin: 8px 0;
+  margin: 8px 0 !important;
   text-align: justify;
+}
+
+.product-description span {
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--bs-red);
+  font-size: 14px;
 }
 
 .special-price {
@@ -1029,8 +1040,8 @@ Product Details Page
 p.s-price {
   font-weight: 600;
   font-size: 18px;
-  margin-top: 16px;
-  margin-bottom: 0;
+  margin-top: 16px !important;
+  margin-bottom: 0 !important;
 }
 
 .special-price strike {
@@ -1063,8 +1074,9 @@ p.s-price {
   margin-bottom: 0;
 }
 
-.product-div-right .pub-stars h4 i {
+.product-div-right .pub-stars h4 .star-icon {
   font-size: 12px;
+  margin-bottom: 3px;
 }
 
 .product-div-right .pub-stars a {
@@ -1221,6 +1233,7 @@ p.s-price {
   color: var(--bs-white);
   border-radius: 20px;
 }
+
 .product-div-right .review-rating .public-review .rating .star .star-icon {
   margin-top: -4px;
 }
@@ -1362,6 +1375,7 @@ wishlist
 .wishlist-sec {
   padding: 50px 0;
 }
+
 .wishlist-sec .wish-img img {
   width: 100px;
   height: auto;
