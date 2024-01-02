@@ -7,17 +7,6 @@ import Loader from "@/app/loading";
 
 const ProductCarouselSec = ({ loading, products, category }) => {
 
-  const responsiveLayout = [
-    {
-      breakpoint: 1024,
-      cols: 4,
-    },
-    {
-      breakpoint: 800,
-      cols: 3,
-    },
-  ]
-
   // Filter products based on the category
   const filteredProducts = category ? products.filter(item => item.category === category) : products;
 
@@ -30,6 +19,18 @@ const ProductCarouselSec = ({ loading, products, category }) => {
     }
     return stars;
   };
+
+
+  const responsiveLayout = [
+    {
+      breakpoint: 1024,
+      cols: 4,
+    },
+    {
+      breakpoint: 800,
+      cols: 3,
+    },
+  ]
 
   return (
     <>
@@ -44,7 +45,7 @@ const ProductCarouselSec = ({ loading, products, category }) => {
                     <div className="thumb">
                       <div className="hover-content">
                         <ul>
-                          <li><Link href={`products/${item?.$id}`}><FaEye className="icon" /></Link></li>
+                          <li><Link href={`/products/${item?.$id}`}><FaEye className="icon" /></Link></li>
                           <li><Link href="/wishlist"><FaStar className="icon" /></Link></li>
                           <li><Link href="/cart"><FaCartPlus className="icon" /></Link></li>
                         </ul>
