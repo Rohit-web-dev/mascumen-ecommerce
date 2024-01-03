@@ -770,11 +770,11 @@ Products Page
 }
 
 .filter .filter-head {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: 1px;
   color: #001068;
-  margin-bottom: 15px;
+  margin: 0;
 }
 
 .filter .filter-heading {
@@ -801,7 +801,21 @@ Products Page
   border-color: #000;
 }
 
-.filter {}
+.filter .clear-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.filter .clear-head button {
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  color: var(--bs-red);
+  background: none;
+}
 
 .price-filter label {
   font-size: 12px;
@@ -825,8 +839,14 @@ Products Page
   margin-top: 10px;
 }
 
+.price-filter .price-filter-btn button:first-child {
+  background: #838383;
+}
 
-.price-filter {}
+.price-filter .price-filter-btn  {
+  display: flex;
+  gap: 5px;
+}
 
 .products-sec .product-searching {
   display: flex;

@@ -8,6 +8,8 @@ import Banner from '@/components/common/Banner';
 import { fetchProducts } from '@/appwrite/config';
 import Loader from '../loading';
 import PriceRangeFilter from '@/components/common/PriceRangeFilter';
+import { addToCart } from '@/appwrite/config';
+
 
 const Products = () => {
 
@@ -17,8 +19,19 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [priceRanges, setPriceRanges] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedBrand, setSelectedBrand] = useState("All Brands");
+  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [cart, setCart] = useState([]);
 
+
+  // ------------------------------------------------------------------------------
+  //  ********************* API CALL ***********************
+  // ------------------------------------------------------------------------------
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,46 +40,72 @@ const Products = () => {
         const data = await fetchProducts();
         setProducts(data);
         setFilteredProducts(data); // Set filteredProducts initially to all products
-
-        // Extract unique categories from the products
+        // Extract unique categories and brands from the products
         const uniqueCategories = [...new Set(data.map(product => product.category))];
+        const uniqueBrands = [...new Set(data.map(product => product.brand))];
         setCategories(uniqueCategories);
-
+        setBrands(uniqueBrands);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching products:', error);
         setLoading(false);
       }
     };
-
     fetchData();
     setSelectedCategory("All Categories"); // Set the default category
   }, []);
 
 
-  // -- product rating color -- 
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      const starColor = i <= rating ? '#fe696a' : '#a1a1a1';
-      stars?.push(<FaStar key={i} className="star-icon" style={{ color: starColor }} />);
+
+  // ------------------------------------------------------------------------------
+  //  ********************* Filter Category, Brand, Price And Clear All ***********************
+  // ------------------------------------------------------------------------------
+
+  // Update brands whenever the selected category changes
+  useEffect(() => {
+    if (selectedCategory === "All Categories") {
+      // If all categories are selected, show all brands
+      const allBrands = [...new Set(products.map(product => product.brand))];
+      setBrands(allBrands);
+    } else {
+      // Filter products based on the selected category
+      const filteredByCategory = products.filter(product => product.category === selectedCategory);
+      // Extract unique brands from the filtered products
+      const uniqueBrands = [...new Set(filteredByCategory.map(product => product.brand))];
+      setBrands(uniqueBrands);
     }
-    return stars;
-  };
+    // Reset selected brand and price range when the category changes
+    setSelectedBrand("All Brands");
+    setSelectedPriceRange(null);
+  }, [selectedCategory, products]);
 
 
 
+  // Update price ranges whenever the selected category, brand, or products change
+  useEffect(() => {
+    // Filter products based on the selected category and brand
+    const filteredProductsByCategoryAndBrand =
+      selectedCategory === "All Categories" && selectedBrand === "All Brands"
+        ? products
+        : selectedCategory === "All Categories"
+          ? products.filter(product => product.brand === selectedBrand)
+          : selectedBrand === "All Brands"
+            ? products.filter(product => product.category === selectedCategory)
+            : products.filter(
+              product => product.category === selectedCategory && product.brand === selectedBrand
+            );
+    // Extract unique price ranges from the filtered products
+    const uniquePriceRanges = [...new Set(filteredProductsByCategoryAndBrand.map(product => product.price))];
+    const sortedUniquePriceRanges = uniquePriceRanges.sort((a, b) => a - b);
+    // Create an array of objects with min and max values for each price range
+    const formattedPriceRanges = sortedUniquePriceRanges.map((price, index) => ({
+      id: index,
+      min: price,
+      max: sortedUniquePriceRanges[index + 1] || price, // Use the same value for max if it's the last range
+    }));
+    setPriceRanges(formattedPriceRanges);
+  }, [selectedCategory, selectedBrand, products]);
 
-
-  const handleFilterChange = (priceRange) => {
-    // Apply the price range filter to the products
-    const filtered = products.filter((product) => {
-      const price = parseFloat(product.price);
-      return price >= priceRange.min && price <= priceRange.max;
-    });
-    // Update the state with the filtered products
-    setFilteredProducts(filtered);
-  };
 
 
   const handleCategoryChange = (selectedCategory) => {
@@ -80,8 +119,75 @@ const Products = () => {
 
 
 
+  const handleBrandChange = (selectedBrand) => {
+    setSelectedBrand(selectedBrand);
+    // Apply brand and category filters
+    const filtered = selectedBrand !== "All Brands"
+      ? products.filter((product) =>
+        product.brand === selectedBrand && (selectedCategory === "All Categories" || product.category === selectedCategory)
+      )
+      : selectedCategory !== "All Categories"
+        ? products.filter((product) => product.category === selectedCategory)
+        : products;
+    setFilteredProducts(filtered);
+    setCurrentPage(1);
+  };
 
-  // Filtered and paginated data
+
+
+  const handlePriceRangeChange = (priceRange) => {
+    // Apply price range filter
+    const filtered = priceRange
+      ? filteredProducts.filter(
+        (product) =>
+          parseFloat(product.price) >= priceRange.min &&
+          parseFloat(product.price) <= priceRange.max
+      )
+      : selectedBrand !== "All Brands"
+        ? products.filter((product) =>
+          product.brand === selectedBrand && (selectedCategory === "All Categories" || product.category === selectedCategory)
+        )
+        : selectedCategory !== "All Categories"
+          ? products.filter((product) => product.category === selectedCategory)
+          : products;
+    setFilteredProducts(filtered);
+    setSelectedPriceRange(priceRange); // Set selectedPriceRange to null when clearing filters
+    setCurrentPage(1); // Reset page to 1 when changing the filter
+  };
+
+
+  // -- clear all filter button --  
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All Categories');
+    setSelectedBrand('All Brands');
+    setSelectedPriceRange(null);
+    setMinPrice('');
+    setMaxPrice('');
+    setCurrentPage(1);
+    // Refetch products or apply initial filtering logic here
+    setFilteredProducts(products);
+  };
+
+
+  // ------------------------------------------------------------------------------
+  //  ********************* product rating color ***********************
+  // ------------------------------------------------------------------------------
+
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      const starColor = i <= rating ? '#fe696a' : '#a1a1a1';
+      stars?.push(<FaStar key={i} className="star-icon" style={{ color: starColor }} />);
+    }
+    return stars;
+  };
+
+
+  // ------------------------------------------------------------------------------
+  //  ********************* Data Pagination ***********************
+  // ------------------------------------------------------------------------------
+
   const itemsPerPage = 12;
   const filteredData = filteredProducts.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -111,6 +217,36 @@ const Products = () => {
   };
 
 
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //                            ADD TO Cart
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+  const handleAddToCart = async (productId) => {
+    try {
+      const selectedProduct = products.find((product) => product?.$id === productId);
+  
+      if (selectedProduct) {
+        const addToCartResponse = await addToCart(productId, selectedProduct);
+  
+        if (addToCartResponse) {
+          console.log('Product added to cart:', addToCartResponse);
+          // Handle success, e.g., show a confirmation message
+        } else {
+          console.error('Error adding to cart: Invalid response');
+          // Handle error, e.g., show an error message
+        }
+      } else {
+        console.error('Error adding to cart: Product not found');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      // Handle error, e.g., show an error message
+    }
+  };
+
+
+
   return (
     <>
       {/* -- banner --  */}
@@ -132,7 +268,10 @@ const Products = () => {
             {/* Search filter */}
             <div className="col-lg-2 col-md-4 col-5 mb-3">
               <div className='filter'>
-                <h5 className='filter-head'>Filter</h5>
+                <div className='clear-head'>
+                  <h5 className='filter-head'>Filter</h5>
+                  <button onClick={handleResetFilters}>Clear All</button>
+                </div>
                 <div className='product-searching'>
                   <input
                     type="search"
@@ -162,17 +301,23 @@ const Products = () => {
                 <select
                   className="form-select"
                   aria-label="Default select example"
-                // onChange={(e) => handleBrandChange(e.target.value)}
+                  value={selectedBrand}
+                  onChange={(e) => handleBrandChange(e.target.value)}
                 >
                   <option value="All Brands">All Brands</option>
-                  {/* {brands.map((brand) => (
+                  {brands.map((brand) => (
                     <option key={brand} value={brand}>{brand}</option>
-                  ))} */}
+                  ))}
                 </select>
 
                 <div className='filter-divider'></div>
                 <h5 className='filter-heading'>Price</h5>
-                <PriceRangeFilter onFilterChange={handleFilterChange} />
+                <PriceRangeFilter
+                  selectedPriceRange={selectedPriceRange}
+                  onPriceRangeChange={handlePriceRangeChange}
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
+                />
               </div>
             </div>
 
@@ -191,7 +336,8 @@ const Products = () => {
                               <ul>
                                 <li><Link href={`/products/${item?.$id}`}><FaEye className="icon" /></Link></li>
                                 <li><Link href="/wishlist"><FaStar className="icon" /></Link></li>
-                                <li><Link href="/cart"><FaCartPlus className="icon" /></Link></li>
+                                {/* <li><Link href="/cart"><FaCartPlus className="icon" /></Link></li> */}
+                                <li><button onClick={() => handleAddToCart(item?.$id)}><FaCartPlus className="icon" /></button></li>
                               </ul>
                             </div>
                             <img src={item?.img} />

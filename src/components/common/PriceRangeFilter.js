@@ -1,17 +1,28 @@
 "use client"
-import {useState} from 'react'
+import { useState, useEffect } from 'react'
 
-const PriceRangeFilter = ({ onFilterChange }) => {
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+const PriceRangeFilter = ({ onPriceRangeChange, minPrice, maxPrice }) => {
+  const [localMinPrice, setLocalMinPrice] = useState(minPrice || '');
+  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice || '');
+
+  useEffect(() => {
+    setLocalMinPrice(minPrice || '');
+    setLocalMaxPrice(maxPrice || '');
+  }, [minPrice, maxPrice]);
 
   const handleFilterChange = () => {
-    if (minPrice !== '' && maxPrice !== '' && !isNaN(minPrice) && !isNaN(maxPrice)) {
-      onFilterChange({
-        min: parseFloat(minPrice),
-        max: parseFloat(maxPrice),
+    if (localMinPrice !== '' && localMaxPrice !== '' && !isNaN(localMinPrice) && !isNaN(localMaxPrice)) {
+      onPriceRangeChange({
+        min: parseFloat(localMinPrice),
+        max: parseFloat(localMaxPrice),
       });
     }
+  };
+
+  const handleResetFilter = () => {
+    setLocalMinPrice('');
+    setLocalMaxPrice('');
+    onPriceRangeChange(null);
   };
 
   return (
@@ -20,19 +31,22 @@ const PriceRangeFilter = ({ onFilterChange }) => {
       <input
         type="number"
         id="minPrice"
-        value={minPrice}
-        onChange={(e) => setMinPrice(e.target.value)}
+        value={localMinPrice}
+        onChange={(e) => setLocalMinPrice(e.target.value)}
       />
 
       <label htmlFor="maxPrice">Max Price:</label>
       <input
         type="number"
         id="maxPrice"
-        value={maxPrice}
-        onChange={(e) => setMaxPrice(e.target.value)}
+        value={localMaxPrice}
+        onChange={(e) => setLocalMaxPrice(e.target.value)}
       />
 
-      <button onClick={handleFilterChange}>Apply Filter</button>
+      <div className='price-filter-btn'>
+        <button onClick={handleResetFilter}>Reset</button>
+        <button onClick={handleFilterChange}>Apply</button>
+      </div>
     </div>
   )
 }

@@ -7,8 +7,10 @@ import img1 from '../../../public/assets/images/product1.png'
 import img2 from '../../../public/assets/images/product2.png'
 import Image from 'next/image'
 import Banner from '@/components/common/Banner';
+import { getCartData } from '@/appwrite/config';
 
 const Cart = () => {
+  const [cartData, setCartData] = useState([]);
   const taxRate = 0.05;
   const shippingRate = 15.0;
   const fadeTime = 300;
@@ -79,6 +81,21 @@ const Cart = () => {
     document.getElementById('cart-shipping').innerHTML = shipping.toFixed(2);
     document.getElementById('cart-total').innerHTML = total.toFixed(2);
   };
+
+
+
+  // -- get cart data from appwrite -- 
+  useEffect(() => {
+    getCartData()
+      .then((data) => {
+        setCartData(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching cart data:', error);
+      });
+  }, []);
+
+  console.log(cartData);
 
   return (
     <>
