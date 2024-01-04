@@ -1,13 +1,33 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaCartArrowDown, FaHeart, FaUser } from "react-icons/fa";
 import Link from 'next/link'
+import { getCartData } from '@/appwrite/config';
+import { roleID } from '@/appwrite/config';
 
 const Navbar = () => {
+  const [cartItems, setCartItems] = useState([]);
   const [activeLink, setActiveLink] = useState('/');
   const handleActiveLink = (path) => {
     setActiveLink(path);
   };
+
+  // -- cart item counting -- 
+  useEffect(() => {
+    getCartData()
+      .then((data) => {
+        setCartItems(data?.filter(item => item.userId === roleID));
+      })
+      .catch((error) => {
+        console.error('Error fetching cart data:', error);
+      });
+  }, []);
+
+  // Sum of the productItem values
+  const totalProductItems = cartItems?.reduce((sum, item) => {
+    return sum + item?.productItem;
+  }, 0);
+
 
   return (
     <ul className="navbar-nav ml-auto">
@@ -45,7 +65,7 @@ const Navbar = () => {
         <Link className={`nav-link user ${activeLink === '/wishlist' ? 'active' : ''}`} onClick={() => handleActiveLink('/wishlist')} href='/wishlist'><FaHeart /></Link>
       </li>
       <li className="cart nav-item">
-        <Link className={`nav-link user ${activeLink === '/cart' ? 'active' : ''}`} onClick={() => handleActiveLink('/cart')} href='/cart'><FaCartArrowDown /><sup>2</sup></Link>
+        <Link className={`nav-link user ${activeLink === '/cart' ? 'active' : ''}`} onClick={() => handleActiveLink('/cart')} href='/cart'><FaCartArrowDown /><sup>{totalProductItems}</sup></Link>
       </li>
     </ul>
   )

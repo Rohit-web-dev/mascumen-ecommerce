@@ -4,6 +4,8 @@ import { Inter } from 'next/font/google'
 import Footer from '@/components/footer/Footer'
 import 'bootstrap/dist/css/bootstrap.css'
 import Script from 'next/script'
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,6 +20,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <Header />
         {children}
+        <ToastContainer/>
         <Footer />
         <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></Script>
         <Script src="https://code.jquery.com/jquery-3.6.4.min.js"></Script>

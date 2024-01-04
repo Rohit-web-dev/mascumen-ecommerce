@@ -560,7 +560,7 @@ Cart Details Page
 .cart-page .product .product-price:before,
 .cart-page .product .product-line-price:before,
 .cart-page .totals-value:before {
-  content: '$';
+  content: '₹' !important;
 }
 
 .cart-page .shopping-cart {
@@ -592,7 +592,8 @@ Cart Details Page
 
 .cart-page .product .product-image img {
   width: 100px;
-  height: auto;
+  height: 100px;
+  object-fit: cover;
 }
 
 .cart-page .product .product-details .product-title {
@@ -652,7 +653,7 @@ Cart Details Page
 
 .cart-page .totals .totals-item .totals-value {
   float: right;
-  width: 21%;
+  width: 40%;
   text-align: right;
 }
 
@@ -741,7 +742,7 @@ Cart Details Page
   }
 
   .cart-page .product .product-line-price:before {
-    content: 'Item Total: $';
+    content: 'Item Total: ₹';
   }
 
   .cart-page .totals .totals-item label {
@@ -1466,7 +1467,8 @@ wishlist
 
 .wishlist-sec .wish-img img {
   width: 100px;
-  height: auto;
+  height: 100px;
+  object-fit: cover;
   margin-right: 20px;
 }
 

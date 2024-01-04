@@ -5,8 +5,8 @@ const client = new Client()
   .setProject('65855c8c96ca1d4be76e');
 
 const databases = new Databases(client);
-const cartCollectionId = '6594e8a9158e259fe423';
-const roleID = '6594eb94f31503705194';
+
+export const roleID = '6594eb94f31503705194';
 
 // -- all products -- 
 export const fetchProducts = async () => {
@@ -37,25 +37,48 @@ export const fetchProductDetailsById = async (id) => {
   }
 };
 
-
 // -- get cart data -- 
 export const getCartData = async () => {
-  const collectionId = '6594e8a9158e259fe423'; // Replace with your actual cart collection ID
-
   try {
-    const response = await appwrite.database.listDocuments(collectionId);
+    const response = await databases.listDocuments('658a5a2edc47302eb5d2', '6594e8a9158e259fe423',);
     console.log('Get cart data response:', response);
-
     if (!response) {
       throw new Error('Invalid response: Empty response');
     }
-
     return response.documents;
   } catch (error) {
     console.error('Error getting cart data:', error);
     throw error;
   }
 };
+
+// -- delete cart data --
+export const removeCartItem = (itemId) => {
+  return databases.deleteDocument('658a5a2edc47302eb5d2', '6594e8a9158e259fe423', itemId);
+};
+
+// -- get wishlist data -- 
+export const getWishlistData = async () => {
+  try {
+    const response = await databases.listDocuments('658a5a2edc47302eb5d2', '659677e92b9023968d76',);
+    console.log('Get wishlist data response:', response);
+    if (!response) {
+      throw new Error('Invalid response: Empty response');
+    }
+    return response.documents;
+  } catch (error) {
+    console.error('Error getting wishlist data:', error);
+    throw error;
+  }
+};
+
+// -- delete wishlist data --
+export const removeWishlistItem = (itemId) => {
+  return databases.deleteDocument('658a5a2edc47302eb5d2', '659677e92b9023968d76', itemId);
+};
+
+
+
 
 
 // -- generate unique id -- 
