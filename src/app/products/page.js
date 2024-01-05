@@ -5,10 +5,10 @@ import "@/app/styles/style.css"
 import { FaEye, FaStar, FaCartPlus, FaSearch } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { fetchProducts } from '@/appwrite/config';
+import { fetchProducts, addToCart, addToWishlist, getCartData } from '@/appwrite/config';
 import Loader from '../loading';
 import PriceRangeFilter from '@/components/common/PriceRangeFilter';
-import { addToCart } from '@/appwrite/config';
+import CommonToast from '@/components/common/CommonToast';
 
 
 const Products = () => {
@@ -26,7 +26,7 @@ const Products = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [cart, setCart] = useState([]);
+  const [cartData, setCartData] = useState([]);
 
 
   // ------------------------------------------------------------------------------
@@ -221,30 +221,29 @@ const Products = () => {
   //                            ADD TO Cart
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-  const handleAddToCart = async (productId) => {
+  const handleCartClick = async (id) => {
     try {
-      const selectedProduct = products.find((product) => product?.$id === productId);
-  
-      if (selectedProduct) {
-        const addToCartResponse = await addToCart(productId, selectedProduct);
-  
-        if (addToCartResponse) {
-          console.log('Product added to cart:', addToCartResponse);
-          // Handle success, e.g., show a confirmation message
-        } else {
-          console.error('Error adding to cart: Invalid response');
-          // Handle error, e.g., show an error message
-        }
-      } else {
-        console.error('Error adding to cart: Product not found');
-      }
+      await addToCart(id, 1);
+      CommonToast("success", "Product Added To Cart");
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      // Handle error, e.g., show an error message
+      console.error('Error adding product to cart', error);
     }
   };
 
+
+
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //                            ADD TO Wishlist
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  const handleWishlistClick = async (id) => {
+    try {
+      await addToWishlist(id, 1);
+      CommonToast("success", "Product Added To Wishlist");
+    } catch (error) {
+      console.error('Error adding product to Wishlist', error);
+    }
+  };
 
 
   return (
@@ -335,9 +334,8 @@ const Products = () => {
                             <div className="hover-content">
                               <ul>
                                 <li><Link href={`/products/${item?.$id}`}><FaEye className="icon" /></Link></li>
-                                <li><Link href="/wishlist"><FaStar className="icon" /></Link></li>
-                                {/* <li><Link href="/cart"><FaCartPlus className="icon" /></Link></li> */}
-                                <li><button onClick={() => handleAddToCart(item?.$id)}><FaCartPlus className="icon" /></button></li>
+                                <li><a onClick={() => handleWishlistClick(item?.$id)}><FaStar className="icon" /></a></li>
+                                <li><a onClick={() => handleCartClick(item?.$id)}><FaCartPlus className="icon" /></a></li>
                               </ul>
                             </div>
                             <img src={item?.img} />

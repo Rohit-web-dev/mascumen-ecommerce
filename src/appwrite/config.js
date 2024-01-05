@@ -37,6 +37,27 @@ export const fetchProductDetailsById = async (id) => {
   }
 };
 
+// -- added cart data -- 
+export const addToCart = async (productId) => {
+  try {
+    const response = await databases.createDocument(
+      '658a5a2edc47302eb5d2',
+      '6594e8a9158e259fe423',
+      ID.unique(),
+      {
+        userId: roleID,
+        ecommerceWebProducts: [productId],
+        productItem: 1
+      }
+    );
+    console.log('Product added to cart:', response);
+    return response.documents;
+  } catch (error) {
+    console.error('Error adding product to cart:', error);
+    throw error;
+  }
+};
+
 // -- get cart data -- 
 export const getCartData = async () => {
   try {
@@ -57,6 +78,27 @@ export const removeCartItem = (itemId) => {
   return databases.deleteDocument('658a5a2edc47302eb5d2', '6594e8a9158e259fe423', itemId);
 };
 
+// -- added wishlist data -- 
+export const addToWishlist = async (productId) => {
+  try {
+    const response = await databases.createDocument(
+      '658a5a2edc47302eb5d2',
+      '659677e92b9023968d76',
+      ID.unique(),
+      {
+        userId: roleID,
+        ecommerceWebProducts: [productId],
+        productItem: 1
+      }
+    );
+    console.log('Product added to cart:', response);
+    return response.documents;
+  } catch (error) {
+    console.error('Error adding product to cart:', error);
+    throw error;
+  }
+};
+
 // -- get wishlist data -- 
 export const getWishlistData = async () => {
   try {
@@ -75,38 +117,4 @@ export const getWishlistData = async () => {
 // -- delete wishlist data --
 export const removeWishlistItem = (itemId) => {
   return databases.deleteDocument('658a5a2edc47302eb5d2', '659677e92b9023968d76', itemId);
-};
-
-
-
-
-
-// -- generate unique id -- 
-const generateUniqueID = (length) => {
-  const min = Math.pow(10, length - 1);
-  const max = Math.pow(10, length) - 1;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
-
-// -- Added To Cart -- 
-export const addToCart = async (product) => {
-  const cartCollectionId = '6594e8a9158e259fe423'; 
-  const uniqueDocumentId = generateUniqueID(20);
-  try {
-    const response = await databases.createDocument(
-      cartCollectionId,
-      uniqueDocumentId.toString(),
-      { product },
-      ['6594eb94f31503705194'] // Replace with your actual permission role ID
-    );
-    console.log('Add to cart response:', response);
-    if (!response) {
-      throw new Error('Invalid response: Empty response');
-    }
-    return response;
-  } catch (error) {
-    console.error('Error adding to cart:', error);
-    throw error;
-  }
 };
