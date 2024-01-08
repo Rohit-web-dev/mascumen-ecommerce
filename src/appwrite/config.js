@@ -38,14 +38,14 @@ export const fetchProductDetailsById = async (id) => {
 };
 
 // -- added cart data -- 
-export const addToCart = async (productId) => {
+export const addToCart = async (productId, userID) => {
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',
       '6594e8a9158e259fe423',
       ID.unique(),
       {
-        userId: roleID,
+        userId: userID,
         ecommerceWebProducts: [productId],
         productItem: 1
       }
@@ -79,14 +79,14 @@ export const removeCartItem = (itemId) => {
 };
 
 // -- added wishlist data -- 
-export const addToWishlist = async (productId) => {
+export const addToWishlist = async (productId, userID) => {
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',
       '659677e92b9023968d76',
       ID.unique(),
       {
-        userId: roleID,
+        userId: userID,
         ecommerceWebProducts: [productId],
         productItem: 1
       }

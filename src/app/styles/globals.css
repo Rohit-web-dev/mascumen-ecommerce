@@ -552,3 +552,38 @@ html,
 body {
   padding-right: 0 !important;
 }
+
+
+/* -- start empty page --  */
+.empty-state {
+  width: 750px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 4px;
+}
+.empty-state__content {
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.empty-state__content .empty-state__icon {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  border-radius: 200px;
+  justify-content: center;
+  background-color: #f7fafc;
+  box-shadow: 0px 2px 1px #e1e3ec;
+}
+.empty-state__content .empty-state__icon img {
+  width: 170px;
+}
+.empty-state__content .empty-state__message {
+  color: var(--bs-red);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 0.85rem;
+}
+/* -- end empty page --  */

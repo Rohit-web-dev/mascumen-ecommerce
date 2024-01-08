@@ -8,6 +8,7 @@ import { roleID } from '@/appwrite/config';
 import { removeWishlistItem } from '@/appwrite/config';
 import CommonToast from '@/components/common/CommonToast';
 import Link from 'next/link';
+import EmptyPage from '@/components/common/EmptyPage';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -31,7 +32,7 @@ const Wishlist = () => {
     removeWishlistItem(id)
       .then(() => {
         setWishlistItems((prevItems) => prevItems.filter((item) => item?.$id !== id));
-        CommonToast("success", "Deleted Successfully");
+        CommonToast("success", "Product Deleted Successfully");
       })
       .catch((error) => {
         CommonToast("error", error);
@@ -50,14 +51,15 @@ const Wishlist = () => {
 
   return (
     <div className="wishlist-sec">
-      {loading && <Loader />}
-      {!loading && (
-        <div className="container">
-          <h2 className="section-heading">My Wishlist</h2>
+      <div className="container">
+        <h2 className="section-heading">My Wishlist</h2>
+        {loading && <Loader />}
+        {!loading && wishlistItems.length === 0 && <EmptyPage />}
+        {!loading && (
           <div className='row'>
             {
               wishlistItems?.map((item) => (
-                <div className="col-md-6 col-12 my-3">
+                <div className="col-md-6 col-12 my-3" key={item?.ecommerceWebProducts[0]?.$id}>
                   <div className="cart-table-details">
                     <div className="row">
                       <Link href={`/products/${item?.ecommerceWebProducts[0]?.$id}`} className="col-10 d-flex align-items-center">
@@ -83,9 +85,9 @@ const Wishlist = () => {
               ))
             }
           </div>
-        </div>
-      )
-      }
+        )
+        }
+      </div>
     </div>
   )
 }

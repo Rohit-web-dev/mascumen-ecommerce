@@ -1,13 +1,15 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { FaStar } from "react-icons/fa6";
+import { FaCartPlus, FaWallet } from "react-icons/fa";
 import "@/app/styles/style.css"
 import Carousel from 'better-react-carousel'
 import img from '../../../../public/assets/images/products-page-heading.jpg'
 import ProductCarouselSec from '@/components/home/ProductCarouselSec';
 import Banner from '@/components/common/Banner';
-import { fetchProducts, fetchProductDetailsById } from '@/appwrite/config';
+import { fetchProducts, fetchProductDetailsById, addToCart, getCartData, roleID } from '@/appwrite/config';
 import Loader from '@/app/loading';
+import CommonToast from '@/components/common/CommonToast';
 
 const ProductDetails = ({ params }) => {
   const id = params.id
@@ -16,6 +18,7 @@ const ProductDetails = ({ params }) => {
   const [productDetails, setProductDetails] = useState(null);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [showMore, setShowMore] = useState(false);
+  const [cartData, setCartData] = useState([]);
 
 
   // -- click to show product img -- 
@@ -75,6 +78,39 @@ const ProductDetails = ({ params }) => {
   const percentageDiscount = ((productDetails?.oldprice - productDetails?.price) / productDetails?.oldprice) * 100;
 
 
+  // -- ADD TO CART BUTTON --
+  // -- get cart data --
+  useEffect(() => {
+    getCartData()
+      .then((data) => {
+        setCartData(data?.filter(item => item.userId === roleID));
+      })
+      .catch((error) => {
+        console.error('Error fetching cart data:', error);
+      });
+  }, []);
+
+  const handleCartClick = async (clickedItemId) => {
+    if (roleID === '') {
+      CommonToast("error", "You are not logged in user");
+    } else {
+      const isItemInCart = cartData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      if (isItemInCart) {
+        CommonToast("error", "Product already in the cart");
+      } else {
+        await addToCart(clickedItemId, roleID, 1);
+        try {
+          const updatedCartData = await getCartData();
+          setCartData(updatedCartData?.filter(item => item.userId === roleID));
+          CommonToast("success", "Product Added To Cart");
+        } catch (error) {
+          console.error('Error fetching updated cart data:', error);
+        }
+      }
+    }
+  };
+
+
   const responsiveLayout = [
     {
       breakpoint: 1024,
@@ -122,9 +158,8 @@ const ProductDetails = ({ params }) => {
                   }
                 </Carousel>
                 <div className="btn-groups">
-                  <button type="button" className="add-cart-btn"><i className="fas fa-shopping-cart"></i> add to
-                    cart</button>
-                  <button type="button" className="buy-now-btn"><i className="fas fa-wallet"></i> buy now</button>
+                  <button type="button" onClick={() => handleCartClick(productDetails?.$id)} className="add-cart-btn"><FaCartPlus /> add to cart</button>
+                  <button type="button" className="buy-now-btn"><FaWallet /> buy now</button>
                 </div>
               </div>
               <div className="col-md-6 col-12 my-2">

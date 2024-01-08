@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link'
 import "@/app/styles/style.css"
-import { FaEye, FaStar, FaCartPlus, FaSearch } from "react-icons/fa";
+import { FaEye, FaStar, FaCartPlus, FaSearch, FaHeart } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { fetchProducts, addToCart, addToWishlist, getCartData } from '@/appwrite/config';
+import { fetchProducts, addToCart, addToWishlist, getCartData, getWishlistData, roleID } from '@/appwrite/config';
 import Loader from '../loading';
 import PriceRangeFilter from '@/components/common/PriceRangeFilter';
 import CommonToast from '@/components/common/CommonToast';
@@ -27,6 +27,7 @@ const Products = () => {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [cartData, setCartData] = useState([]);
+  const [wishlistData, setWishlistData] = useState([]);
 
 
   // ------------------------------------------------------------------------------
@@ -221,12 +222,34 @@ const Products = () => {
   //                            ADD TO Cart
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  const handleCartClick = async (id) => {
-    try {
-      await addToCart(id, 1);
-      CommonToast("success", "Product Added To Cart");
-    } catch (error) {
-      console.error('Error adding product to cart', error);
+  // -- get cart data --
+  useEffect(() => {
+    getCartData()
+      .then((data) => {
+        setCartData(data?.filter(item => item.userId === roleID));
+      })
+      .catch((error) => {
+        console.error('Error fetching cart data:', error);
+      });
+  }, []);
+
+  const handleCartClick = async (clickedItemId) => {
+    if (roleID === '') {
+      CommonToast("error", "You are not logged in user");
+    } else {
+      const isItemInCart = cartData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      if (isItemInCart) {
+        CommonToast("error", "Product already in the cart");
+      } else {
+        await addToCart(clickedItemId, roleID, 1);
+        try {
+          const updatedCartData = await getCartData();
+          setCartData(updatedCartData?.filter(item => item.userId === roleID));
+          CommonToast("success", "Product Added To Cart");
+        } catch (error) {
+          console.error('Error fetching updated cart data:', error);
+        }
+      }
     }
   };
 
@@ -236,12 +259,35 @@ const Products = () => {
   //                            ADD TO Wishlist
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  const handleWishlistClick = async (id) => {
-    try {
-      await addToWishlist(id, 1);
-      CommonToast("success", "Product Added To Wishlist");
-    } catch (error) {
-      console.error('Error adding product to Wishlist', error);
+  // -- get cart data --
+  useEffect(() => {
+    getWishlistData()
+      .then((data) => {
+        setWishlistData(data?.filter(item => item.userId === roleID));
+      })
+      .catch((error) => {
+        console.error('Error fetching cart data:', error);
+      });
+  }, []);
+
+
+  const handleWishlistClick = async (clickedItemId) => {
+    if (roleID === '') {
+      CommonToast("error", "You are not logged in user");
+    } else {
+      const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      if (isItemInCart) {
+        CommonToast("error", "Product already in the wishlist");
+      } else {
+        await addToWishlist(clickedItemId, roleID, 1);
+        try {
+          const updatedWishlistData = await getWishlistData();
+          setWishlistData(updatedWishlistData?.filter(item => item.userId === roleID));
+          CommonToast("success", "Product Added To Wishlist");
+        } catch (error) {
+          console.error('Error fetching updated cart data:', error);
+        }
+      }
     }
   };
 
@@ -334,7 +380,7 @@ const Products = () => {
                             <div className="hover-content">
                               <ul>
                                 <li><Link href={`/products/${item?.$id}`}><FaEye className="icon" /></Link></li>
-                                <li><a onClick={() => handleWishlistClick(item?.$id)}><FaStar className="icon" /></a></li>
+                                <li><a onClick={() => handleWishlistClick(item?.$id)}><FaHeart className="icon" /></a></li>
                                 <li><a onClick={() => handleCartClick(item?.$id)}><FaCartPlus className="icon" /></a></li>
                               </ul>
                             </div>
