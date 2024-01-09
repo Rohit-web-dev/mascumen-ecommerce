@@ -4,7 +4,7 @@ const client = new Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('65855c8c96ca1d4be76e');
 
-const databases = new Databases(client);
+export const databases = new Databases(client);
 
 export const roleID = '6594eb94f31503705194';
 
@@ -73,6 +73,24 @@ export const getCartData = async () => {
   }
 };
 
+// -- update cart data -- 
+export const updateCartItem = async (itemId, updatedData) => {
+  try {
+    console.log('Updating cart item with data:', updatedData);
+    const response = await databases.updateDocument(
+      '658a5a2edc47302eb5d2',
+      '6594e8a9158e259fe423',
+      itemId,
+      updatedData
+    );
+    console.log('Cart item updated successfully:', response);
+    return response.documents;
+  } catch (error) {
+    console.error('Error updating cart item:', error);
+    throw error;
+  }
+};
+
 // -- delete cart data --
 export const removeCartItem = (itemId) => {
   return databases.deleteDocument('658a5a2edc47302eb5d2', '6594e8a9158e259fe423', itemId);
@@ -117,4 +135,30 @@ export const getWishlistData = async () => {
 // -- delete wishlist data --
 export const removeWishlistItem = (itemId) => {
   return databases.deleteDocument('658a5a2edc47302eb5d2', '659677e92b9023968d76', itemId);
+};
+
+
+// -- added user address -- 
+export const addUserAddress = async (userID, address) => {
+  try {
+    const response = await databases.createDocument(
+      '658a5a2edc47302eb5d2',
+      '659d1b647efdf3940520',
+      ID.unique(),
+      {
+        userId: userID,
+        addressOne: address?.addressOne,
+        addressTwo: address?.addressTwo,
+        country: address?.country,
+        state: address?.state,
+        city: address?.city,
+        pin: address?.pin,
+      }
+    );
+    console.log('Product added to cart:', response);
+    return response.documents;
+  } catch (error) {
+    console.error('Error adding product to cart:', error);
+    throw error;
+  }
 };

@@ -4,12 +4,11 @@ import "@/app/styles/style.css"
 import { FaTrashAlt } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { getCartData } from '@/appwrite/config';
+import { getCartData, removeCartItem, roleID, databases } from '@/appwrite/config';
 import Loader from '../loading';
-import { roleID } from '@/appwrite/config';
-import { removeCartItem } from '@/appwrite/config';
 import CommonToast from '@/components/common/CommonToast';
 import EmptyPage from '@/components/common/EmptyPage';
+import Link from 'next/link';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -80,6 +79,26 @@ const Cart = () => {
       .catch((error) => {
         CommonToast("error", error);
       });
+  };
+
+
+  // -- Update cart item -- 
+  const handleCartUpdate = async () => {
+    try {
+      const updatePromises = cartItems.map((item) => {
+        const updatedData = {
+          productItem: item.productItem, // Set the updated value as needed
+        };
+        const jsonString = JSON.stringify(updatedData);
+        return databases.updateDocument('658a5a2edc47302eb5d2', '6594e8a9158e259fe423', item.$id, jsonString);
+      });
+      // Wait for all update promises to complete
+      await Promise.all(updatePromises);
+      CommonToast("success", "Cart Updated Successfully");
+    } catch (error) {
+      console.error('Error updating cart items:', error);
+      CommonToast("error", `Error updating cart items: ${error.message}`);
+    }
   };
 
 
@@ -181,7 +200,9 @@ const Cart = () => {
                           </div>
                         </div>
                       </div>
-                      <button className="checkout">Proceed To Checkout</button>
+                      <Link href="/checkout">
+                        <button className="checkout" onClick={handleCartUpdate}>Proceed To Checkout</button>
+                      </Link>
                     </div>
                   </div>
                 </div>

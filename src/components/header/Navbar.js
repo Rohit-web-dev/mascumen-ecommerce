@@ -23,10 +23,10 @@ const Navbar = () => {
       });
   }, []);
 
-  // Sum of the productItem values
-  const totalProductItems = cartItems?.reduce((sum, item) => {
-    return sum + item?.productItem;
-  }, 0);
+  // // Sum of the productItem values
+  // const totalProductItems = cartItems?.reduce((sum, item) => {
+  //   return sum + item?.productItem;
+  // }, 0);
 
 
   return (
@@ -65,10 +65,11 @@ const Navbar = () => {
         <Link className={`nav-link user ${activeLink === '/wishlist' ? 'active' : ''}`} onClick={() => handleActiveLink('/wishlist')} href='/wishlist'><FaHeart /></Link>
       </li>
       <li className="cart nav-item">
-        <Link className={`nav-link user ${activeLink === '/cart' ? 'active' : ''}`} onClick={() => handleActiveLink('/cart')} href='/cart'><FaCartArrowDown /><sup>{totalProductItems}</sup></Link>
+        <Link className={`nav-link user ${activeLink === '/cart' ? 'active' : ''}`} onClick={() => handleActiveLink('/cart')} href='/cart'>
+        <FaCartArrowDown />{cartItems.length === 0 ? "" : <sup>&#8226;</sup>}</Link>
       </li>
     </ul>
   )
 }
 
-export default Navbar
+export default Navbar 
