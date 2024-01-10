@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import "@/app/styles/style.css"
 import Banner from '@/components/common/Banner'
 import img from '../../../public/assets/images/about-us-page-heading.jpg'
-import { getCartData, roleID, addUserAddress } from '@/appwrite/config';
+import { getCartData, roleID, addOrderAllDetails } from '@/appwrite/config';
 import CommonToast from '@/components/common/CommonToast';
 import Loader from '../loading';
 
@@ -11,9 +11,12 @@ const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cartTotal, setCartTotal] = useState(0);
+  const [isChecked, setIsChecked] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(null);
   const taxRate = 0.05;
   const shippingRate = 15.0;
-  const [isChecked, setIsChecked] = useState(false);
+ 
+
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
@@ -31,7 +34,6 @@ const Checkout = () => {
       });
   }, []);
 
-  console.log(cartItems);
 
   useEffect(() => {
     recalculateCart();
@@ -69,14 +71,24 @@ const Checkout = () => {
   };
 
 
+  const handleRadioChange = (event) => {
+    setSelectedValue(event.target.value);
+  };
+
+
   const handleSubmit = async (event) => {
+    const dataToSend = cartItems.map((item) => {
+      return {
+        productId: item?.$id,
+        productItem: item?.productItem,
+      };
+    });
     event.preventDefault();
-    console.log("data: ", checkoutDetails);
-    await addUserAddress(roleID, checkoutDetails);
+    await addOrderAllDetails(roleID, checkoutDetails, selectedValue, totalAmount, dataToSend);
     try {
-      CommonToast("success", "Successfully added user address");
+      CommonToast("success", "Successfully added order details");
     } catch (error) {
-      console.error('Error fetching updated cart data:', error);
+      console.error('Error added order details:', error);
     }
   };
 
@@ -225,20 +237,32 @@ const Checkout = () => {
                   <div className="card-body">
                     <div className="form-group">
                       <div className="custom-control custom-radio my-2">
-                        <input type="radio" className="custom-control-input me-2" name="payment" id="paypal" />
-                        <label className="custom-control-label" for="paypal">Paypal</label>
+                        <input type="radio" className="custom-control-input me-2" value="UPI" checked={selectedValue === 'UPI'} onChange={handleRadioChange} id="upi" />
+                        <label className="custom-control-label" for="upi">UPI</label>
                       </div>
                     </div>
                     <div className="form-group">
                       <div className="custom-control custom-radio my-2">
-                        <input type="radio" className="custom-control-input me-2" name="payment" id="directcheck" />
-                        <label className="custom-control-label" for="directcheck">Direct Check</label>
+                        <input type="radio" className="custom-control-input me-2" value="Wallets" checked={selectedValue === 'Wallets'} onChange={handleRadioChange} id="wallets" />
+                        <label className="custom-control-label" for="wallets">Wallets</label>
                       </div>
                     </div>
                     <div className="">
                       <div className="custom-control custom-radio my-2">
-                        <input type="radio" className="custom-control-input me-2" name="payment" id="banktransfer" />
-                        <label className="custom-control-label" for="banktransfer">Bank Transfer</label>
+                        <input type="radio" className="custom-control-input me-2" value="Card" checked={selectedValue === 'Card'} onChange={handleRadioChange} id="card" />
+                        <label className="custom-control-label" for="card">Credit / Debit / ATM Card</label>
+                      </div>
+                    </div>
+                    <div className="">
+                      <div className="custom-control custom-radio my-2">
+                        <input type="radio" className="custom-control-input me-2" value="Net Banking" checked={selectedValue === 'Net Banking'} onChange={handleRadioChange} id="netBanking" />
+                        <label className="custom-control-label" for="netBanking">Net Banking</label>
+                      </div>
+                    </div>
+                    <div className="">
+                      <div className="custom-control custom-radio my-2">
+                        <input type="radio" className="custom-control-input me-2" value="COD" checked={selectedValue === 'COD'} onChange={handleRadioChange} id="cod" />
+                        <label className="custom-control-label" for="cod">Cash on Delivery</label>
                       </div>
                     </div>
                   </div>

@@ -40,7 +40,7 @@ const Cart = () => {
   const recalculateCart = () => {
     let subtotal = 0;
     cartItems.forEach((item) => {
-      subtotal += item.ecommerceWebProducts[0]?.price * item?.productItem;
+      subtotal = item?.ecommerceWebProducts[0]?.price * item?.productItem;
     });
     const tax = subtotal * taxRate;
     const shipping = subtotal > 0 ? shippingRate : 0;

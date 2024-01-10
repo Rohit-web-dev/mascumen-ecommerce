@@ -138,10 +138,10 @@ export const removeWishlistItem = (itemId) => {
 };
 
 
-// -- added user address -- 
-export const addUserAddress = async (userID, address) => {
+// -- added order details -- 
+export const addOrderAllDetails = async (userID, address, payment, amount, product) => {
   try {
-    const response = await databases.createDocument(
+    const userAddress = await databases.createDocument(
       '658a5a2edc47302eb5d2',
       '659d1b647efdf3940520',
       ID.unique(),
@@ -155,10 +155,48 @@ export const addUserAddress = async (userID, address) => {
         pin: address?.pin,
       }
     );
-    console.log('Product added to cart:', response);
-    return response.documents;
+
+    const oderDetails = await databases.createDocument(
+      '658a5a2edc47302eb5d2',
+      '659e28b8c7ae24db37c9',
+      ID.unique(),
+      {
+        userId: userID,
+        totalAmount: amount,
+        paymentId: payment,
+        orderItems: [],
+        userAddress: userAddress.$id,
+      }
+    );
+
+    Promise.allSettled(product.map(async (item) => await databases.createDocument(
+      '658a5a2edc47302eb5d2',
+      '659e2a0807c23128c50e',
+      ID.unique(),
+      {
+        orderId: oderDetails?.$id,
+        productId: item.productId,
+        productItem: item.productItem,
+      }
+    ))).then(async (results) => {
+      console.log('Order item added successfully:', results);
+      const value = results.map((item) => (item?.value?.$id))
+      const updateValue = await databases.updateDocument(
+        '658a5a2edc47302eb5d2',
+        '659e28b8c7ae24db37c9',
+        oderDetails?.$id,
+        {
+          orderItems: value,
+        }
+      );
+      console.log(updateValue);
+    })
+      .catch((error) => {
+        console.error('Error adding order items:', error);
+      });
+
   } catch (error) {
-    console.error('Error adding product to cart:', error);
+    console.error('Error Order Details:', error);
     throw error;
   }
 };
