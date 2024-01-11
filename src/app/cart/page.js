@@ -13,6 +13,7 @@ import Link from 'next/link';
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subTotal, setSubTotal] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const taxRate = 0.05;
   const shippingRate = 15.0;
@@ -40,11 +41,12 @@ const Cart = () => {
   const recalculateCart = () => {
     let subtotal = 0;
     cartItems.forEach((item) => {
-      subtotal = item?.ecommerceWebProducts[0]?.price * item?.productItem;
+      subtotal += (item.ecommerceWebProducts[0]?.price || 0) * (item?.productItem || 0);
+      setSubTotal(subtotal);
     });
-    const tax = subtotal * taxRate;
+    const tax = subTotal * taxRate;
     const shipping = subtotal > 0 ? shippingRate : 0;
-    const total = subtotal + tax + shipping;
+    const total = subTotal + tax + shipping;
     setCartTotal(total);
   };
 
@@ -178,13 +180,13 @@ const Cart = () => {
                         <div className="totals-item">
                           <label>Subtotal</label>
                           <div className="totals-value" id="cart-subtotal">
-                            {cartTotal.toFixed(2)}
+                            {subTotal.toFixed(2)}
                           </div>
                         </div>
                         <div className="totals-item">
                           <label>Tax (5%)</label>
                           <div className="totals-value" id="cart-tax">
-                            {(taxRate * cartTotal).toFixed(2)}
+                            {(taxRate * subTotal).toFixed(2)}
                           </div>
                         </div>
                         <div className="totals-item">
@@ -196,7 +198,7 @@ const Cart = () => {
                         <div className="totals-item totals-item-total">
                           <label>Grand Total</label>
                           <div className="totals-value" id="cart-total">
-                            {(cartTotal + taxRate * cartTotal + shippingRate).toFixed(2)}
+                            {(subTotal + taxRate * subTotal + shippingRate).toFixed(2)}
                           </div>
                         </div>
                       </div>
