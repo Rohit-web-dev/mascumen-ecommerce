@@ -1,4 +1,4 @@
-import { Client, Databases, Query, ID } from 'appwrite';
+import { Client, Databases, Query, ID, Account } from 'appwrite';
 
 const client = new Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
@@ -7,6 +7,70 @@ const client = new Client()
 export const databases = new Databases(client);
 
 export const roleID = '6594eb94f31503705194';
+
+
+export const account = new Account(client)
+
+export class AppwriteService {
+
+      async createUserAccount({email, password, name, phone}) {
+          try {
+              const userAccount = await account.create(ID.unique(), email, password, name, phone)
+              if (userAccount) {
+                  return this.login({email, password})
+              } else {
+                  return userAccount
+              }    
+          } catch (error) {
+              throw error
+          }
+      }
+  
+      async login( { email, password }) {
+          try {
+               return await account.createEmailSession(email, password)
+          } catch (error) {
+            throw error
+          }
+       }
+       async forgetPassword(newPassword){
+          try{
+              const password = await account.updatePassword( this.getCurrentUser(), newPassword);
+              return password
+   
+          }
+          catch(error){
+              console.log(error)
+          }
+       }
+      async isLoggedIn() {
+          try {
+              const data = await this.getCurrentUser();
+              return Boolean(data)
+          } catch (error) {}
+  
+          return false
+      }
+  
+      async getCurrentUser() {
+          try {
+              return account.get()
+          } catch (error) {
+              console.log("getcurrentUser error: " + error)
+              
+          }
+  
+          return null
+      }
+  
+      async logout() {
+          try {
+              return await account.deleteSession("current")
+          } catch (error) {
+              console.log("logout error: " + error)
+          }
+      }
+  }
 
 // -- all products -- 
 export const fetchProducts = async () => {
@@ -200,3 +264,7 @@ export const addOrderAllDetails = async (userID, address, payment, amount, produ
     throw error;
   }
 };
+
+const appwriteService = new AppwriteService()
+  
+export default appwriteService
