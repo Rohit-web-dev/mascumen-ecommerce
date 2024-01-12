@@ -178,6 +178,19 @@ ul li.nav-item .icon {
   font-size: 14px;
 }
 
+ul li.nav-item .logged-user {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  color: white !important;
+  font-weight: 500;
+}
+
+ul li.nav-item .logged span {
+ color: #efefef;
+}
+
 ul li.nav-item .user {
   background: #394766;
   width: 40px;

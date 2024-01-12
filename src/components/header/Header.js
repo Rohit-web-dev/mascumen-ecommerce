@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image'
 import headerImg from '../../../public/assets/images/mascumen.jpeg'
 import Link from 'next/link'
@@ -7,13 +7,37 @@ import { FaBars } from "react-icons/fa6";
 import Navbar from './Navbar';
 import Login from '../auth/Login';
 import Register from '../auth/Register';
+import appwriteService from '@/appwrite/config';
+import { Modal } from 'react-bootstrap';
+
 
 const Header = () => {
+  const [currentUser, setCurrentUser] = useState();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('tab1');
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   // -- sign in and sign up modal tab button --
   const showTab = (tabId) => {
     setActiveTab(tabId);
   };
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await appwriteService.getCurrentUser();
+        setCurrentUser(users);
+        const loggedIn = await appwriteService.isLoggedIn();
+        setIsLoggedIn(loggedIn);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
 
   return (
     <>
@@ -27,41 +51,35 @@ const Header = () => {
               <FaBars className="toggler-icon" />
             </button>
             <div className="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-              <Navbar />
+              <Navbar handleShow={handleShow} currentUser={currentUser} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
             </div>
           </div>
         </nav>
       </header>
       <div className="header-blank"></div>
 
-      {/* -- signIn & signUp Modal -- */}
-      <div className="modal fade" id="signIn" tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <div className="d-flex">
-                <button
-                  onClick={() => showTab('tab1')}
-                  className={`tab-button me-4 ${activeTab === 'tab1' ? 'active-tab-button' : ''}`}
-                >Sign In</button>
-                <button
-                  onClick={() => showTab('tab2')}
-                  className={`tab-button ${activeTab === 'tab2' ? 'active-tab-button' : ''}`}
-                >Sign Up</button>
-              </div>
-              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div className="modal-body">
-              <div id="tab1" className={`tab-content ${activeTab === 'tab1' ? 'active-tab' : 'hidden-tab'}`}>
-                <Login />
-              </div>
-              <div id="tab2" className={`tab-content ${activeTab === 'tab2' ? 'active-tab' : 'hidden-tab'}`}>
-                <Register />
-              </div>
-            </div>
+      <Modal show={show} onHide={handleClose} centered>
+        <Modal.Header closeButton>
+          <div className="d-flex">
+            <button
+              onClick={() => showTab('tab1')}
+              className={`tab-button me-4 ${activeTab === 'tab1' ? 'active-tab-button' : ''}`}
+            >Sign In</button>
+            <button
+              onClick={() => showTab('tab2')}
+              className={`tab-button ${activeTab === 'tab2' ? 'active-tab-button' : ''}`}
+            >Sign Up</button>
           </div>
-        </div>
-      </div>
+        </Modal.Header>
+        <Modal.Body>
+          <div id="tab1" className={`tab-content ${activeTab === 'tab1' ? 'active-tab' : 'hidden-tab'}`}>
+            <Login handleClose={handleClose} />
+          </div>
+          <div id="tab2" className={`tab-content ${activeTab === 'tab2' ? 'active-tab' : 'hidden-tab'}`}>
+            <Register handleClose={handleClose} />
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   )
 }

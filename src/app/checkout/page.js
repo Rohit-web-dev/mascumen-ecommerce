@@ -1,12 +1,13 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import "@/app/styles/style.css"
 import Banner from '@/components/common/Banner'
 import img from '../../../public/assets/images/about-us-page-heading.jpg'
-import { getCartData, roleID, addOrderAllDetails } from '@/appwrite/config';
+import { getCartData, addOrderAllDetails } from '@/appwrite/config';
 import CommonToast from '@/components/common/CommonToast';
 import Loader from '../loading';
 import { useForm } from 'react-hook-form';
+import userContext from '@/context/user/userContext';
 
 const Checkout = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -19,10 +20,12 @@ const Checkout = () => {
   const taxRate = 0.05;
   const shippingRate = 15.0;
 
-
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
+
+  const currentUserID = useContext(userContext)
+  const roleID = currentUserID?.currentUserRollID
 
   useEffect(() => {
     setLoading(true);

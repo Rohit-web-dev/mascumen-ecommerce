@@ -1,11 +1,11 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { FaCartArrowDown, FaHeart, FaUser } from "react-icons/fa";
+import { FaCartArrowDown, FaHeart, FaUser, FaRegUserCircle } from "react-icons/fa";
 import Link from 'next/link'
-import { getCartData } from '@/appwrite/config';
-import { roleID } from '@/appwrite/config';
+import { getCartData, roleID } from '@/appwrite/config';
+import appwriteService from '@/appwrite/config';
 
-const Navbar = () => {
+const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
   const [cartItems, setCartItems] = useState([]);
   const [activeLink, setActiveLink] = useState('/');
   const handleActiveLink = (path) => {
@@ -28,6 +28,14 @@ const Navbar = () => {
   //   return sum + item?.productItem;
   // }, 0);
 
+  const handleLogout = async () => {
+    try {
+      await appwriteService.logout();
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <ul className="navbar-nav ml-auto">
@@ -58,15 +66,30 @@ const Navbar = () => {
       <li className="nav-item">
         <Link className={`nav-link ${activeLink === '/contact' ? 'active' : ''}`} onClick={() => handleActiveLink('/contact')} href='/contact'>Contact Us</Link>
       </li>
-      <li className="login-sec nav-item">
-        <Link className='nav-link user' href='' data-bs-toggle="modal" data-bs-target="#signIn"><FaUser className='icon' /></Link>
-      </li>
+
+      {isLoggedIn ?
+        <li className="nav-item dropdown">
+          <Link className="nav-link logged-user" href="/" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <FaRegUserCircle /><span>{currentUser?.name}</span>
+          </Link>
+          <ul className="dropdown-menu child-drop" aria-labelledby="navbarDropdown">
+            <li><Link className="dropdown-item" href='#'>Profile</Link></li>
+            <li><Link className="dropdown-item" href='#'>Setting</Link></li>
+            <li><Link className="dropdown-item" href='#' onClick={handleLogout}>Logout</Link></li>
+          </ul>
+        </li>
+        :
+        <li className="login-sec nav-item">
+          <Link className='nav-link user' href='' onClick={handleShow}><FaUser className='icon' /></Link>
+        </li>
+      }
+
       <li className="nav-item">
         <Link className={`nav-link user ${activeLink === '/wishlist' ? 'active' : ''}`} onClick={() => handleActiveLink('/wishlist')} href='/wishlist'><FaHeart /></Link>
       </li>
       <li className="cart nav-item">
         <Link className={`nav-link user ${activeLink === '/cart' ? 'active' : ''}`} onClick={() => handleActiveLink('/cart')} href='/cart'>
-        <FaCartArrowDown />{cartItems.length === 0 ? "" : <sup>&#8226;</sup>}</Link>
+          <FaCartArrowDown />{cartItems.length === 0 ? "" : <sup>&#8226;</sup>}</Link>
       </li>
     </ul>
   )

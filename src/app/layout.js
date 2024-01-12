@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import Script from 'next/script'
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import UserState from '@/context/user/UserState'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
@@ -17,10 +18,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        {children}
-        <ToastContainer />
-        <Footer />
+        <UserState>
+          <Header />
+          {children}
+          <ToastContainer />
+          <Footer />
+        </UserState>
         <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></Script>
         <Script src="https://code.jquery.com/jquery-3.6.4.min.js"></Script>
       </body>

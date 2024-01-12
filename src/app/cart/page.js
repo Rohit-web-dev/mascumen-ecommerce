@@ -1,14 +1,15 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import "@/app/styles/style.css"
 import { FaTrashAlt } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { getCartData, removeCartItem, roleID, databases } from '@/appwrite/config';
+import { getCartData, removeCartItem, databases } from '@/appwrite/config';
 import Loader from '../loading';
 import CommonToast from '@/components/common/CommonToast';
 import EmptyPage from '@/components/common/EmptyPage';
 import Link from 'next/link';
+import userContext from '@/context/user/userContext';
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -18,6 +19,10 @@ const Cart = () => {
   const taxRate = 0.05;
   const shippingRate = 15.0;
 
+  const currentUserID = useContext(userContext)
+  const roleID = currentUserID?.currentUserRollID
+
+  console.log(roleID);
 
   useEffect(() => {
     setLoading(true);

@@ -1,18 +1,20 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import "@/app/styles/style.css"
 import { FaStar, FaTrashAlt } from "react-icons/fa";
-import { getWishlistData } from '@/appwrite/config';
+import { getWishlistData, removeWishlistItem } from '@/appwrite/config';
 import Loader from '../loading';
-import { roleID } from '@/appwrite/config';
-import { removeWishlistItem } from '@/appwrite/config';
 import CommonToast from '@/components/common/CommonToast';
 import Link from 'next/link';
 import EmptyPage from '@/components/common/EmptyPage';
+import userContext from '@/context/user/userContext';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const currentUserID = useContext(userContext)
+  const roleID = currentUserID?.currentUserRollID
 
   useEffect(() => {
     setLoading(true);

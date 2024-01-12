@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import appwriteService from "@/appwrite/config";
 import { useRouter } from "next/navigation";
+import CommonToast from '../common/CommonToast';
 
-const Login = () => {
+const Login = ({ handleClose }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,12 +16,15 @@ const Login = () => {
     try {
       const session = await appwriteService.login(formData);
       if (session) {
-        console.log(session);
+        console.log('Logged in:', session);
+        CommonToast("success", "Logged in successfully");
+        handleClose()
       }
     } catch (error) {
-      setError(error.message);
+      setError('Login failed:', error.message);
     }
   };
+
 
   return (
     <>
@@ -39,7 +43,7 @@ const Login = () => {
             value={formData.email}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
-          }
+            }
           />
         </div>
         <div className="mb-3">
@@ -55,18 +59,18 @@ const Login = () => {
             value={formData.password}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, password: e.target.value }))
-          }
+            }
           />
         </div>
         <p className="note">
           *Note: You don't have an account; please click the signup button
         </p>
-       {error && <p className="text-red-600 mt-8 text-center">{error}</p>}
+        {error && <p className="text-red-600 mt-8 text-center">{error}</p>}
         <div className="d-flex justify-content-end py-3">
           <button
             type="button"
             className="btn btn-secondary me-2"
-            data-bs-dismiss="modal"
+            onClick={handleClose}
           >
             Close
           </button>

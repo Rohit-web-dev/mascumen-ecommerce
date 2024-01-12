@@ -2,8 +2,9 @@
 import React, { FormEvent, useState } from 'react';
 import appwriteService from "@/appwrite/config";
 import { useRouter } from "next/navigation";
+import CommonToast from '../common/CommonToast';
 
-const Register = () => {
+const Register = ({ handleClose }) => {
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
@@ -21,23 +22,25 @@ const Register = () => {
     }));
   };
 
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     //const filteredData = Object.fromEntries(Object.entries(formData).filter(([key]) => key !== 'phone' && key !== 'confirmPassword'));
-
-
     try {
       // console.log('huddel',appwriteService);
-       const result = await appwriteService.createUserAccount(formData);
+      const result = await appwriteService.createUserAccount(formData);
       // // console.log('huddel',formData);
-        if (result) {
-      //   setAuthStatus(true)
-         console.info(result)}
-      console.log('handlesignup',formData)
+      if (result) {
+        //   setAuthStatus(true)
+        CommonToast("success", "Registration successfully");
+        handleClose()
+        console.info(result)
+      }
+      console.log('handlesignup', formData)
     }
-      // Handle the result, e.g., show a success message or redirect the user
-      // console.log(result);
-    catch(error) {
+    // Handle the result, e.g., show a success message or redirect the user
+    // console.log(result);
+    catch (error) {
       // Handle errors, e.g., show an error message to the user
       setError(error.message);
     }

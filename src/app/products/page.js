@@ -1,15 +1,15 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Link from 'next/link'
 import "@/app/styles/style.css"
 import { FaEye, FaStar, FaCartPlus, FaSearch, FaHeart } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { fetchProducts, addToCart, addToWishlist, getCartData, getWishlistData, roleID } from '@/appwrite/config';
+import { fetchProducts, addToCart, addToWishlist, getCartData, getWishlistData } from '@/appwrite/config';
 import Loader from '../loading';
 import PriceRangeFilter from '@/components/common/PriceRangeFilter';
 import CommonToast from '@/components/common/CommonToast';
-
+import userContext from '@/context/user/userContext';
 
 const Products = () => {
 
@@ -29,6 +29,8 @@ const Products = () => {
   const [cartData, setCartData] = useState([]);
   const [wishlistData, setWishlistData] = useState([]);
 
+  const currentUserID = useContext(userContext)
+  const roleID = currentUserID?.currentUserRollID
 
   // ------------------------------------------------------------------------------
   //  ********************* API CALL ***********************
@@ -234,7 +236,7 @@ const Products = () => {
   }, []);
 
   const handleCartClick = async (clickedItemId) => {
-    if (roleID === '') {
+    if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
       const isItemInCart = cartData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
@@ -272,7 +274,7 @@ const Products = () => {
 
 
   const handleWishlistClick = async (clickedItemId) => {
-    if (roleID === '') {
+    if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
       const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);

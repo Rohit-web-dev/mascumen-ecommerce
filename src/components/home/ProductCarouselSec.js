@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Link from "next/link";
 import "@/app/styles/style.css"
 import Carousel from 'better-react-carousel'
@@ -7,10 +7,14 @@ import { FaEye, FaStar, FaCartPlus, FaHeart } from "react-icons/fa";
 import Loader from "@/app/loading";
 import { addToCart, addToWishlist, getCartData, getWishlistData, roleID } from '@/appwrite/config';
 import CommonToast from '../common/CommonToast';
+import userContext from '@/context/user/userContext';
 
 const ProductCarouselSec = ({ loading, products, category }) => {
   const [cartData, setCartData] = useState([]);
   const [wishlistData, setWishlistData] = useState([]);
+
+  const currentUserID = useContext(userContext)
+  const roleID = currentUserID?.currentUserRollID
 
   // Filter products based on the category
   const filteredProducts = category ? products.filter(item => item.category === category) : products;
@@ -39,7 +43,7 @@ const ProductCarouselSec = ({ loading, products, category }) => {
   }, []);
 
   const handleCartClick = async (clickedItemId) => {
-    if (roleID === '') {
+    if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
       const isItemInCart = cartData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
@@ -72,7 +76,7 @@ const ProductCarouselSec = ({ loading, products, category }) => {
   }, []);
 
   const handleWishlistClick = async (clickedItemId) => {
-    if (roleID === '') {
+    if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
       const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
