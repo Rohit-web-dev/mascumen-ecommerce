@@ -17,7 +17,9 @@ const ProductCarouselSec = ({ loading, products, category }) => {
   const roleID = currentUserID?.currentUserRollID
 
   // Filter products based on the category
-  const filteredProducts = category ? products.filter(item => item.category === category) : products;
+  const filteredProducts = category ? products.filter(item => item?.categories?.[0]?.name === category) : products;
+
+  console.log(filteredProducts);
 
   // -- product rating color -- 
   const renderStars = (rating) => {
@@ -110,8 +112,8 @@ const ProductCarouselSec = ({ loading, products, category }) => {
   return (
     <>
       <section className="section products-carousel">
-        {loading && <Loader />}
-        {!loading && (
+        {/* {loading && <Loader />}
+        {!loading && ( */}
           <Carousel cols={5} rows={1} gap={10} responsiveLayout={responsiveLayout}>
             {
               filteredProducts && filteredProducts.map((item) => (
@@ -125,10 +127,10 @@ const ProductCarouselSec = ({ loading, products, category }) => {
                           <li><a onClick={() => handleCartClick(item?.$id)}><FaCartPlus className="icon" /></a></li>
                         </ul>
                       </div>
-                      <img src={item?.img} alt={item?.title} />
+                      <img src={item?.images?.[0]?.src} alt={item?.title} />
                     </div>
                     <div className="down-content">
-                      <h4>{item?.title}</h4>
+                      <h4>{item?.name}</h4>
                       <div className="d-flex justify-content-between">
                         <span>₹{item?.price}</span>
                         <ul className="stars">
@@ -141,7 +143,7 @@ const ProductCarouselSec = ({ loading, products, category }) => {
               ))
             }
           </Carousel>
-        )}
+        {/* )} */}
       </section>
     </>
   )
