@@ -273,6 +273,10 @@ ul li.nav-item .child-drop li .dropdown-item:hover {
     transition: left 500ms ease-in-out;
   }
 
+  ul li.nav-item .logged-user {
+    justify-content: start;
+  }
+
   /* -- end left to right slider --  */
 
   li.login-sec {

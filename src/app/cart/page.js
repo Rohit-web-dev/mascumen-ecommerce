@@ -10,12 +10,21 @@ import CommonToast from '@/components/common/CommonToast';
 import EmptyPage from '@/components/common/EmptyPage';
 import Link from 'next/link';
 import userContext from '@/context/user/userContext';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCartData } from '@/redux/slice/cartSlice';
+import { fetchProducts } from '@/redux/slice/productsSlice';
 
 const Cart = () => {
+  const dispatch = useDispatch()
+  const cart = useSelector((state) => state.cart?.items)
+  const products = useSelector((state) => state.products.data)
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subTotal, setSubTotal] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
+  const [cartItemsData, setCartItemsData] = useState([]);
+
+
   const taxRate = 0.05;
   const shippingRate = 15.0;
 
@@ -23,6 +32,20 @@ const Cart = () => {
   const roleID = currentUserID?.currentUserRollID
 
   console.log(roleID);
+
+  useEffect(() => {
+    dispatch(fetchCartData());
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  const filteredUser = cart.filter(item => item.userId === roleID);
+  const cartProductIds = filteredUser.map(item => item.productId);
+  const filteredCartData = products.filter(product => cartProductIds.includes(product.id));
+
+  console.log(cart);
+  console.log(products);
+  console.log("filteredUser", cartProductIds);
+  console.log("filteredProducts", filteredCartData);
 
   useEffect(() => {
     setLoading(true);
