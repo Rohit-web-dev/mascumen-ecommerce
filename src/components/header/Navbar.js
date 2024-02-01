@@ -2,31 +2,45 @@
 import React, { useState, useEffect } from 'react';
 import { FaCartArrowDown, FaHeart, FaUser, FaRegUserCircle } from "react-icons/fa";
 import Link from 'next/link'
-import { getCartData, roleID } from '@/appwrite/config';
+import { useDispatch, useSelector } from "react-redux";
 import appwriteService from '@/appwrite/config';
+import { fetchCartData } from '@/redux/slice/cartSlice';
 
 const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState();
+  const dispatch = useDispatch()
+  const cart = useSelector((state) => state.cart?.items)
   const [activeLink, setActiveLink] = useState('/');
   const handleActiveLink = (path) => {
     setActiveLink(path);
   };
 
+  const roleID = "6594eb94f31503705194"
+
   // -- cart item counting -- 
   useEffect(() => {
-    getCartData()
-      .then((data) => {
-        setCartItems(data?.filter(item => item.userId === roleID));
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-      });
-  }, []);
+    dispatch(fetchCartData());
+  }, [dispatch]);
 
-  // // Sum of the productItem values
-  // const totalProductItems = cartItems?.reduce((sum, item) => {
-  //   return sum + item?.productItem;
-  // }, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      const filteredUser = cart.filter(item => item && item?.userId === roleID);
+      setCartItems(filteredUser);
+    };
+    fetchData();
+  }, [cart, roleID]);
+
+
+  // Sum of the productItem values
+  const totalProductItems = cartItems?.reduce((sum, item) => {
+    const userId = item?.userId;
+    if (userId) {
+      return sum + (item?.productItem || 0); 
+    } else {
+      return sum;
+    }
+  }, 0);
+
 
   const handleLogout = async () => {
     try {
@@ -89,7 +103,7 @@ const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
       </li>
       <li className="cart nav-item">
         <Link className={`nav-link user ${activeLink === '/cart' ? 'active' : ''}`} onClick={() => handleActiveLink('/cart')} href='/cart'>
-          <FaCartArrowDown />{cartItems.length === 0 ? "" : <sup>&#8226;</sup>}</Link>
+          <FaCartArrowDown /><sup>{totalProductItems}</sup></Link>
       </li>
     </ul>
   )

@@ -5,26 +5,56 @@ import "@/app/styles/style.css"
 import Carousel from 'better-react-carousel'
 import { FaEye, FaStar, FaCartPlus, FaHeart } from "react-icons/fa";
 import Loader from "@/app/loading";
-import { addToWishlist, getWishlistData, } from '@/appwrite/config';
+// import { addToWishlist, getWishlistData, } from '@/appwrite/config';
 import CommonToast from '../common/CommonToast';
 import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
+import { addToWishlist, fetchCartWishlist } from '@/redux/slice/wishlistSlice';
 
-const ProductCarouselSec = ({ loading, products, category }) => {
-  // const [cartData, setCartData] = useState([]);
+const ProductCarouselSec = ({ loading, setLoading, products, category }) => {
   const [wishlistData, setWishlistData] = useState([]);
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
+  const wishlist = useSelector((state) => state.wishlist?.items)
 
+  // cart data 
   useEffect(() => {
-    dispatch(addToCart());
-    dispatch(fetchCartData());
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(addToCart());
+        dispatch(fetchCartData());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
+
+
+  // wishlist data 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(addToWishlist());
+        dispatch(fetchCartWishlist());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [dispatch]);
 
 
   const currentUserID = useContext(userContext)
   const roleID = currentUserID?.currentUserRollID
+
 
   // Filter products based on the category
   const filteredProducts = category ? products.filter(item => item?.categories?.[0]?.name === category) : products;
@@ -40,7 +70,6 @@ const ProductCarouselSec = ({ loading, products, category }) => {
     return stars;
   };
 
-  console.log(cart);
 
   // -- Add to cart --
   const handleCartClick = async (clickedItemId) => {
@@ -71,39 +100,63 @@ const ProductCarouselSec = ({ loading, products, category }) => {
 
 
 
-
-
   // -- Add to wishlist --
-  //  get wishlist data 
-  useEffect(() => {
-    getWishlistData()
-      .then((data) => {
-        setWishlistData(data?.filter(item => item.userId === roleID));
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-      });
-  }, []);
-
   const handleWishlistClick = async (clickedItemId) => {
     if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
-      const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      const isItemInCart = wishlist.some((item) => item?.productId === clickedItemId);
       if (isItemInCart) {
         CommonToast("error", "Product already in the wishlist");
       } else {
-        await addToWishlist(clickedItemId, roleID, 1);
+        dispatch(addToWishlist(clickedItemId, roleID));
+        dispatch(fetchCartWishlist());
         try {
-          const updatedWishlistData = await getWishlistData();
-          setWishlistData(updatedWishlistData?.filter(item => item.userId === roleID));
-          CommonToast("success", "Product Added To Wishlist");
+          if (wishlist) {
+            const updatedCartData = wishlist.filter(item => item?.userId === roleID);
+            dispatch(fetchCartData());
+            console.log(updatedCartData);
+            CommonToast("success", "Product Added To Cart");
+          } else {
+            console.error('Error: Cart is undefined');
+          }
         } catch (error) {
-          console.error('Error fetching updated cart data:', error);
+          console.error('Error fetching updated wishlist data:', error);
         }
       }
     }
   };
+
+  // //  get wishlist data 
+  // useEffect(() => {
+  //   getWishlistData()
+  //     .then((data) => {
+  //       setWishlistData(data?.filter(item => item.userId === roleID));
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching cart data:', error);
+  //     });
+  // }, []);
+
+  // const handleWishlistClick = async (clickedItemId) => {
+  //   if (roleID === '' || roleID === undefined) {
+  //     CommonToast("error", "You are not logged in user");
+  //   } else {
+  //     const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+  //     if (isItemInCart) {
+  //       CommonToast("error", "Product already in the wishlist");
+  //     } else {
+  //       await addToWishlist(clickedItemId, roleID, 1);
+  //       try {
+  //         const updatedWishlistData = await getWishlistData();
+  //         setWishlistData(updatedWishlistData?.filter(item => item.userId === roleID));
+  //         CommonToast("success", "Product Added To Wishlist");
+  //       } catch (error) {
+  //         console.error('Error fetching updated cart data:', error);
+  //       }
+  //     }
+  //   }
+  // };
 
 
   const responsiveLayout = [
@@ -120,38 +173,38 @@ const ProductCarouselSec = ({ loading, products, category }) => {
   return (
     <>
       <section className="section products-carousel">
-        {/* {loading && <Loader />}
-        {!loading && ( */}
-        <Carousel cols={5} rows={1} gap={10} responsiveLayout={responsiveLayout}>
-          {
-            filteredProducts && filteredProducts.map((item) => (
-              <Carousel.Item key={item?.$id}>
-                <div className="item">
-                  <div className="thumb">
-                    <div className="hover-content">
-                      <ul>
-                        <li><Link href={`/products/${item?.id}`}><FaEye className="icon" /></Link></li>
-                        <li><a onClick={() => handleWishlistClick(item?.id)}><FaHeart className="icon" /></a></li>
-                        <li><a onClick={() => handleCartClick(item?.id)}><FaCartPlus className="icon" /></a></li>
-                      </ul>
+        {loading && <Loader />}
+        {!loading && (
+          <Carousel cols={5} rows={1} gap={10} responsiveLayout={responsiveLayout}>
+            {
+              filteredProducts && filteredProducts.map((item) => (
+                <Carousel.Item key={item?.$id}>
+                  <div className="item">
+                    <div className="thumb">
+                      <div className="hover-content">
+                        <ul>
+                          <li><Link href={`/products/${item?.id}`}><FaEye className="icon" /></Link></li>
+                          <li><a onClick={() => handleWishlistClick(item?.id)}><FaHeart className="icon" /></a></li>
+                          <li><a onClick={() => handleCartClick(item?.id)}><FaCartPlus className="icon" /></a></li>
+                        </ul>
+                      </div>
+                      <img src={item?.images?.[0]?.src} alt={item?.title} />
                     </div>
-                    <img src={item?.images?.[0]?.src} alt={item?.title} />
-                  </div>
-                  <div className="down-content">
-                    <h4>{item?.name}</h4>
-                    <div className="d-flex justify-content-between">
-                      <span>₹{item?.price}</span>
-                      <ul className="stars">
-                        <li>{renderStars(item?.rating)}</li>
-                      </ul>
+                    <div className="down-content">
+                      <h4>{item?.name}</h4>
+                      <div className="d-flex justify-content-between">
+                        <span>₹{item?.price}</span>
+                        <ul className="stars">
+                          <li>{renderStars(item?.rating)}</li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Carousel.Item>
-            ))
-          }
-        </Carousel>
-        {/* )} */}
+                </Carousel.Item>
+              ))
+            }
+          </Carousel>
+        )}
       </section>
     </>
   )

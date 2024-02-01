@@ -8,8 +8,14 @@ import CommonToast from '@/components/common/CommonToast';
 import Loader from '../loading';
 import { useForm } from 'react-hook-form';
 import userContext from '@/context/user/userContext';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCartData } from '@/redux/slice/cartSlice';
+import { fetchProducts } from '@/redux/slice/productsSlice';
 
 const Checkout = () => {
+  const dispatch = useDispatch()
+  const cart = useSelector((state) => state.cart?.items)
+  const products = useSelector((state) => state.products.data)
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +23,7 @@ const Checkout = () => {
   const [cartTotal, setCartTotal] = useState(0);
   const [isChecked, setIsChecked] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
+  const [mergedData, setMergedData] = useState([]);
   const taxRate = 0.05;
   const shippingRate = 15.0;
 
@@ -24,32 +31,55 @@ const Checkout = () => {
     setIsChecked(!isChecked);
   };
 
-  const currentUserID = useContext(userContext)
-  const roleID = currentUserID?.currentUserRollID
+  // const currentUserID = useContext(userContext)
+  // const roleID = currentUserID?.currentUserRollID
+  const roleID = "6594eb94f31503705194"
 
   useEffect(() => {
-    setLoading(true);
-    getCartData()
-      .then((data) => {
-        setCartItems(data?.filter(item => item.userId === roleID));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(fetchCartData());
+        dispatch(fetchProducts());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-        setLoading(false);
-      });
-  }, []);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const filteredUser = cart.filter(item => item.userId === roleID);
+      const cartProductIds = filteredUser.map(item => item.productId);
+      const filteredCartData = products.filter(product => cartProductIds.includes(product.id));
+
+      Promise.all([filteredCartData, filteredUser])
+        .then(([filteredCartData, filteredUser]) => {
+          const mergedData = filteredCartData.map(product => ({
+            ...product,
+            ...filteredUser.find(cartItem => cartItem.productId === product.id)
+          }));
+          setMergedData(mergedData);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+    fetchData();
+  }, [cart, products, roleID]);
 
 
   useEffect(() => {
     recalculateCart();
-  }, [cartItems]);
+  }, [mergedData])
 
 
   const recalculateCart = () => {
     let subtotal = 0;
-    cartItems.forEach((item) => {
-      subtotal += (item.ecommerceWebProducts[0]?.price || 0) * (item?.productItem || 0);
+    mergedData.forEach((item) => {
+      subtotal += (item.price || 0) * (item?.productItem || 0);
       setSubTotal(subtotal);
     });
     const tax = subTotal * taxRate;
@@ -263,10 +293,10 @@ const Checkout = () => {
                   </div>
                   <div className="card-body">
                     {
-                      cartItems?.map((item) => (
+                      mergedData?.map((item) => (
                         <div className="d-flex justify-content-between mb-2" key={item?.$id}>
-                          <p>{item?.ecommerceWebProducts[0]?.title} ({item?.productItem} items)</p>
-                          <p>₹{(item?.ecommerceWebProducts[0]?.price * item?.productItem).toFixed(2)}</p>
+                          <p>{item?.name} ({item?.productItem} items)</p>
+                          <p>₹{(item?.price * item?.productItem).toFixed(2)}</p>
                         </div>
                       ))
                     }

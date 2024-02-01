@@ -2,11 +2,11 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { databases } from '@/appwrite/config';
 import { ID } from 'appwrite';
 
-export const addToCart = createAsyncThunk("addToCart", async (productId, userID) => {
+export const addToWishlist = createAsyncThunk("addToWishlist", async (productId, userID) => {
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',
-      '65b9de309cc3fed93e3c',
+      '65bb757810e62620cd15',
       ID.unique(),
       {
         userId: "6594eb94f31503705194",
@@ -22,9 +22,9 @@ export const addToCart = createAsyncThunk("addToCart", async (productId, userID)
   }
 });
 
-export const fetchCartData = createAsyncThunk("fetchCartData", async () => {
+export const fetchCartWishlist = createAsyncThunk("fetchCartWishlist", async () => {
   try {
-    const response = await databases.listDocuments('658a5a2edc47302eb5d2', '65b9de309cc3fed93e3c');
+    const response = await databases.listDocuments('658a5a2edc47302eb5d2', '65bb757810e62620cd15');
     console.log('Get cart data response:', response);
     if (!response) {
       throw new Error('Invalid response: Empty response');
@@ -37,8 +37,8 @@ export const fetchCartData = createAsyncThunk("fetchCartData", async () => {
 });
 
 
-const cartSlice = createSlice({
-  name: 'cart',
+const wishlistSlice = createSlice({
+  name: 'wishlist',
   initialState: {
     items: [], 
     isLoading: false,
@@ -48,30 +48,30 @@ const cartSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // add to cart 
-      .addCase(addToCart.pending, (state) => {
+      // add to wishlist 
+      .addCase(addToWishlist.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
       })
-      .addCase(addToCart.fulfilled, (state, action) => {
+      .addCase(addToWishlist.fulfilled, (state, action) => {
         state.isLoading = false;
         state.items.push(action.payload);
       })
-      .addCase(addToCart.rejected, (state, action) => {
+      .addCase(addToWishlist.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         console.error('Error adding to cart:', action.error.message);
       })
 
-      // get cart items 
-      .addCase(fetchCartData.pending, (state) => {
+      // get wishlist items 
+      .addCase(fetchCartWishlist.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(fetchCartData.fulfilled, (state, action) => {
+      .addCase(fetchCartWishlist.fulfilled, (state, action) => {
         state.isLoading = false;
         state.items = action.payload;
       })
-      .addCase(fetchCartData.rejected, (state, action) => {
+      .addCase(fetchCartWishlist.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         console.error('Error getting cart data:', action.error.message);
@@ -80,4 +80,4 @@ const cartSlice = createSlice({
   },
 });
 
-export default cartSlice.reducer;
+export default wishlistSlice.reducer;

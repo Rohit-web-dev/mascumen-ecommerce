@@ -4,7 +4,7 @@ import "@/app/styles/style.css"
 import { FaTrashAlt } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { getCartData, removeCartItem, databases } from '@/appwrite/config';
+import { databases } from '@/appwrite/config';
 import Loader from '../loading';
 import CommonToast from '@/components/common/CommonToast';
 import EmptyPage from '@/components/common/EmptyPage';
@@ -18,58 +18,65 @@ const Cart = () => {
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const products = useSelector((state) => state.products.data)
-  const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subTotal, setSubTotal] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
-  const [cartItemsData, setCartItemsData] = useState([]);
+  const [mergedData, setMergedData] = useState([]);
 
 
   const taxRate = 0.05;
   const shippingRate = 15.0;
 
-  const currentUserID = useContext(userContext)
-  const roleID = currentUserID?.currentUserRollID
+  // const currentUserID = useContext(userContext)
+  // const roleID = currentUserID?.currentUserRollID
+  const roleID = "6594eb94f31503705194"
 
-  console.log(roleID);
 
   useEffect(() => {
-    dispatch(fetchCartData());
-    dispatch(fetchProducts());
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(fetchCartData());
+        dispatch(fetchProducts());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [dispatch]);
 
-  const filteredUser = cart.filter(item => item.userId === roleID);
-  const cartProductIds = filteredUser.map(item => item.productId);
-  const filteredCartData = products.filter(product => cartProductIds.includes(product.id));
-
-  console.log(cart);
-  console.log(products);
-  console.log("filteredUser", cartProductIds);
-  console.log("filteredProducts", filteredCartData);
 
   useEffect(() => {
-    setLoading(true);
-    getCartData()
-      .then((data) => {
-        setCartItems(data?.filter(item => item.userId === roleID));
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-        setLoading(false);
-      });
-  }, []);
+    const fetchData = async () => {
+      const filteredUser = cart.filter(item => item.userId === roleID);
+      const cartProductIds = filteredUser.map(item => item.productId);
+      const filteredCartData = products.filter(product => cartProductIds.includes(product.id));
+
+      Promise.all([filteredCartData, filteredUser])
+        .then(([filteredCartData, filteredUser]) => {
+          const mergedData = filteredCartData.map(product => ({
+            ...product,
+            ...filteredUser.find(cartItem => cartItem.productId === product.id)
+          }));
+          setMergedData(mergedData);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+    fetchData();
+  }, [cart, products, roleID]);
 
 
   useEffect(() => {
     recalculateCart();
-  }, [cartItems]);
+  }, [mergedData])
 
 
   const recalculateCart = () => {
     let subtotal = 0;
-    cartItems.forEach((item) => {
-      subtotal += (item.ecommerceWebProducts[0]?.price || 0) * (item?.productItem || 0);
+    mergedData.forEach((item) => {
+      subtotal += (item.price || 0) * (item?.productItem || 0);
       setSubTotal(subtotal);
     });
     const tax = subTotal * taxRate;
@@ -80,18 +87,18 @@ const Cart = () => {
 
 
   const incrementQuantity = (id) => {
-    setCartItems((prevItems) =>
+    setMergedData((prevItems) =>
       prevItems.map((item) =>
-        item?.$id === id ? { ...item, productItem: item?.productItem + 1 } : item
+        item?.id === id ? { ...item, productItem: item?.productItem + 1 } : item
       )
     );
   };
 
 
   const decrementQuantity = (id) => {
-    setCartItems((prevItems) =>
+    setMergedData((prevItems) =>
       prevItems.map((item) =>
-        item?.$id === id && item.productItem > 1
+        item?.id === id && item.productItem > 1
           ? { ...item, productItem: item?.productItem - 1 }
           : item
       )
@@ -100,30 +107,29 @@ const Cart = () => {
 
 
   // -- delete cart item -- 
-  const removeItem = (id) => {
-    removeCartItem(id)
-      .then(() => {
-        setCartItems((prevItems) => prevItems.filter((item) => item?.$id !== id));
-        CommonToast("success", "Product Deleted Successfully");
-      })
-      .catch((error) => {
-        CommonToast("error", error);
-      });
+  const handleRemoveItem = async (removeId) => {
+    try {
+      await databases.deleteDocument('658a5a2edc47302eb5d2', '65b9de309cc3fed93e3c', removeId);
+      setMergedData((prevItems) => prevItems.filter((item) => item?.$id !== removeId));
+      CommonToast("success", "Product Deleted Successfully");
+      dispatch(fetchCartData());
+    } catch (error) {
+      CommonToast("error", error.message || "Error deleting product");
+    }
   };
 
 
   // -- Update cart item -- 
   const handleCartUpdate = async () => {
     try {
-      const updatePromises = cartItems.map((item) => {
+      const updatedData = mergedData.map((item) => {
         const updatedData = {
-          productItem: item.productItem, // Set the updated value as needed
+          productItem: item.productItem,
         };
         const jsonString = JSON.stringify(updatedData);
-        return databases.updateDocument('658a5a2edc47302eb5d2', '6594e8a9158e259fe423', item.$id, jsonString);
+        return databases.updateDocument('658a5a2edc47302eb5d2', '65b9de309cc3fed93e3c', item.$id, jsonString);
       });
-      // Wait for all update promises to complete
-      await Promise.all(updatePromises);
+      await Promise.all(updatedData);
       CommonToast("success", "Cart Updated Successfully");
     } catch (error) {
       console.error('Error updating cart items:', error);
@@ -146,7 +152,7 @@ const Cart = () => {
         {!loading && (
           <>
             {
-              cartItems.length === 0 ? <EmptyPage /> :
+              mergedData.length === 0 ? <EmptyPage /> :
                 <div className="row px-xl-5 mb-5">
                   <div className="col-lg-9 my-2">
                     <div className="cart-table-details">
@@ -162,31 +168,31 @@ const Cart = () => {
                           <label className="product-removal">Remove</label>
                           <label className="product-line-price">Total</label>
                         </div>
-                        {cartItems?.map((item) => (
-                          <div className="product" key={item?.ecommerceWebProducts[0]?.$id}>
+                        {mergedData?.map((item) => (
+                          <div className="product" key={item?.id}>
                             <div className="product-image">
-                              <img src={item?.ecommerceWebProducts[0]?.img} alt="altImg" />
+                              <img src={item?.images[0]?.src} alt="altImg" />
                             </div>
                             <div className="product-details">
-                              <div className="product-title">{item?.ecommerceWebProducts[0]?.title}</div>
-                              <p className="product-description">{item?.ecommerceWebProducts[0]?.desc}</p>
+                              <div className="product-title">{item?.name}</div>
+                              <p className="product-description">{item?.short_description}</p>
                             </div>
-                            <div className="product-price">{item?.ecommerceWebProducts[0]?.price}</div>
+                            <div className="product-price">{item?.price}</div>
                             <div className="product-quantity">
-                              <button onClick={() => decrementQuantity(item?.$id)}>-</button>
+                              <button onClick={() => decrementQuantity(item?.id)}>-</button>
                               <input type="text" value={item?.productItem} readOnly />
-                              <button onClick={() => incrementQuantity(item?.$id)}>+</button>
+                              <button onClick={() => incrementQuantity(item?.id)}>+</button>
                             </div>
                             <div className="product-removal">
                               <button
                                 className="remove-product"
-                                onClick={() => removeItem(item?.$id)}
+                                onClick={() => handleRemoveItem(item?.$id)}
                               >
                                 <FaTrashAlt className="trash-icon" />
                               </button>
                             </div>
                             <div className="product-line-price">
-                              {(item?.ecommerceWebProducts[0]?.price * item?.productItem).toFixed(2)}
+                              {(item?.price * item?.productItem).toFixed(2)}
                             </div>
                           </div>
                         ))}
