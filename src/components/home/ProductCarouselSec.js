@@ -5,15 +5,14 @@ import "@/app/styles/style.css"
 import Carousel from 'better-react-carousel'
 import { FaEye, FaStar, FaCartPlus, FaHeart } from "react-icons/fa";
 import Loader from "@/app/loading";
-// import { addToWishlist, getWishlistData, } from '@/appwrite/config';
 import CommonToast from '../common/CommonToast';
 import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
-import { addToWishlist, fetchCartWishlist } from '@/redux/slice/wishlistSlice';
+import { addToWishlist, fetchWishlist } from '@/redux/slice/wishlistSlice';
 
-const ProductCarouselSec = ({ loading, setLoading, products, category }) => {
-  const [wishlistData, setWishlistData] = useState([]);
+const ProductCarouselSec = ({ products, category }) => {
+  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const wishlist = useSelector((state) => state.wishlist?.items)
@@ -41,7 +40,7 @@ const ProductCarouselSec = ({ loading, setLoading, products, category }) => {
       try {
         setLoading(true);
         dispatch(addToWishlist());
-        dispatch(fetchCartWishlist());
+        dispatch(fetchWishlist());
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -110,15 +109,15 @@ const ProductCarouselSec = ({ loading, setLoading, products, category }) => {
         CommonToast("error", "Product already in the wishlist");
       } else {
         dispatch(addToWishlist(clickedItemId, roleID));
-        dispatch(fetchCartWishlist());
+        dispatch(fetchWishlist());
         try {
           if (wishlist) {
             const updatedCartData = wishlist.filter(item => item?.userId === roleID);
-            dispatch(fetchCartData());
+            dispatch(fetchWishlist());
             console.log(updatedCartData);
-            CommonToast("success", "Product Added To Cart");
+            CommonToast("success", "Product Added To wishlist");
           } else {
-            console.error('Error: Cart is undefined');
+            console.error('Error: wishlist is undefined');
           }
         } catch (error) {
           console.error('Error fetching updated wishlist data:', error);
@@ -126,37 +125,6 @@ const ProductCarouselSec = ({ loading, setLoading, products, category }) => {
       }
     }
   };
-
-  // //  get wishlist data 
-  // useEffect(() => {
-  //   getWishlistData()
-  //     .then((data) => {
-  //       setWishlistData(data?.filter(item => item.userId === roleID));
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching cart data:', error);
-  //     });
-  // }, []);
-
-  // const handleWishlistClick = async (clickedItemId) => {
-  //   if (roleID === '' || roleID === undefined) {
-  //     CommonToast("error", "You are not logged in user");
-  //   } else {
-  //     const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
-  //     if (isItemInCart) {
-  //       CommonToast("error", "Product already in the wishlist");
-  //     } else {
-  //       await addToWishlist(clickedItemId, roleID, 1);
-  //       try {
-  //         const updatedWishlistData = await getWishlistData();
-  //         setWishlistData(updatedWishlistData?.filter(item => item.userId === roleID));
-  //         CommonToast("success", "Product Added To Wishlist");
-  //       } catch (error) {
-  //         console.error('Error fetching updated cart data:', error);
-  //       }
-  //     }
-  //   }
-  // };
 
 
   const responsiveLayout = [
@@ -178,7 +146,7 @@ const ProductCarouselSec = ({ loading, setLoading, products, category }) => {
           <Carousel cols={5} rows={1} gap={10} responsiveLayout={responsiveLayout}>
             {
               filteredProducts && filteredProducts.map((item) => (
-                <Carousel.Item key={item?.$id}>
+                <Carousel.Item key={item?.id}>
                   <div className="item">
                     <div className="thumb">
                       <div className="hover-content">

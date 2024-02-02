@@ -2,44 +2,75 @@
 import { useState, useEffect, useContext } from 'react';
 import "@/app/styles/style.css"
 import { FaStar, FaTrashAlt } from "react-icons/fa";
-import { getWishlistData, removeWishlistItem } from '@/appwrite/config';
 import Loader from '../loading';
 import CommonToast from '@/components/common/CommonToast';
 import Link from 'next/link';
 import EmptyPage from '@/components/common/EmptyPage';
 import userContext from '@/context/user/userContext';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from '@/redux/slice/productsSlice';
+import { fetchWishlist } from '@/redux/slice/wishlistSlice';
+import { databases } from '@/appwrite/config';
 
 const Wishlist = () => {
+  const dispatch = useDispatch()
+  const wishlist = useSelector((state) => state.wishlist?.items)
+  const products = useSelector((state) => state.products.data)
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const currentUserID = useContext(userContext)
-  const roleID = currentUserID?.currentUserRollID
+  // const currentUserID = useContext(userContext)
+  // const roleID = currentUserID?.currentUserRollID
+  const roleID = "6594eb94f31503705194"
 
   useEffect(() => {
-    setLoading(true);
-    getWishlistData()
-      .then((data) => {
-        setWishlistItems(data?.filter(item => item.userId === roleID));
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(fetchWishlist());
+        dispatch(fetchProducts());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
         setLoading(false);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const filteredUser = wishlist.filter(item => item.userId === roleID);
+      const cartProductIds = filteredUser.map(item => item.productId);
+      const filteredCartData = products.filter(product => cartProductIds.includes(product.id));
+
+      Promise.all([filteredCartData, filteredUser])
+      .then(([filteredCartData, filteredUser]) => {
+        const mergedData = filteredCartData.map(product => ({
+          ...product,
+          ...filteredUser.find(cartItem => cartItem.productId === product.id)
+        }));
+        setWishlistItems(mergedData);
       })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-        setLoading(false);
-      });
-  }, []);
+      .catch(error => console.error('Error fetching data:', error));
+    }
+    fetchData();
+  }, [wishlist, products, roleID]);
+
 
   // -- delete cart item -- 
-  const removeItem = (id) => {
-    removeWishlistItem(id)
-      .then(() => {
-        setWishlistItems((prevItems) => prevItems.filter((item) => item?.$id !== id));
-        CommonToast("success", "Product Deleted Successfully");
-      })
-      .catch((error) => {
-        CommonToast("error", error);
-      });
+  const handleRemoveItem = async (removeId) => {
+    try {
+      await databases.deleteDocument('658a5a2edc47302eb5d2', '65bb757810e62620cd15', removeId);
+      setWishlistItems((prevItems) => prevItems.filter((item) => item?.$id !== removeId));
+      CommonToast("success", "Product Deleted Successfully");
+      dispatch(fetchWishlist());
+    } catch (error) {
+      CommonToast("error", error.message || "Error deleting product");
+    }
   };
+
 
   // -- products rating -- 
   const renderStars = (rating) => {
@@ -61,23 +92,23 @@ const Wishlist = () => {
           <div className='row'>
             {
               wishlistItems?.map((item) => (
-                <div className="col-md-6 col-12 my-3" key={item?.ecommerceWebProducts[0]?.$id}>
+                <div className="col-md-6 col-12 my-3" key={item?.id}>
                   <div className="cart-table-details">
                     <div className="row">
-                      <Link href={`/products/${item?.ecommerceWebProducts[0]?.$id}`} className="col-10 d-flex align-items-center">
+                      <Link href={`/products/${item?.id}`} className="col-10 d-flex align-items-center">
                         <div className="wish-img">
-                          <img src={item?.ecommerceWebProducts[0]?.img} alt="altImg" />
+                          <img src={item?.images[0]?.src} alt="altImg" />
                         </div>
                         <div className="product-details">
-                          <div className="product-title">{item?.ecommerceWebProducts[0]?.title}</div>
+                          <div className="product-title">{item?.name}</div>
                           <ul className="stars">
-                            <li>{renderStars(item?.ecommerceWebProducts[0]?.rating)}</li>
+                            <li>{renderStars(item?.rating_count)}</li>
                           </ul>
-                          <p className="product-price">₹{item?.ecommerceWebProducts[0]?.price}</p>
+                          <p className="product-price">₹{item?.price}</p>
                         </div>
                       </Link>
                       <div className="col-2 remove-wish">
-                        <button className="remove-product" onClick={() => removeItem(item?.$id)}>
+                        <button className="remove-product" onClick={() => handleRemoveItem(item?.$id)}>
                           <FaTrashAlt className="trash-icon" />
                         </button>
                       </div>

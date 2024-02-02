@@ -7,19 +7,25 @@ import Carousel from 'better-react-carousel'
 import img from '../../../../public/assets/images/products-page-heading.jpg'
 import ProductCarouselSec from '@/components/home/ProductCarouselSec';
 import Banner from '@/components/common/Banner';
-import { fetchProducts, fetchProductDetailsById, addToCart, getCartData, roleID } from '@/appwrite/config';
 import Loader from '@/app/loading';
 import CommonToast from '@/components/common/CommonToast';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductById, selectSelectedProduct } from '@/redux/slice/productsSlice';
+import { fetchProducts } from "@/redux/slice/productsSlice";
+import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
+
 
 const ProductDetails = ({ params }) => {
   const id = params.id
-  const [products, setProducts] = useState([]);
+  const dispatch = useDispatch();
+  const productDetails = useSelector(selectSelectedProduct);
+  const products = useSelector((state) => state.products.data)
+  const cart = useSelector((state) => state.cart?.items)
   const [loading, setLoading] = useState(true);
-  const [productDetails, setProductDetails] = useState(null);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [showMore, setShowMore] = useState(false);
-  const [cartData, setCartData] = useState([]);
 
+  const roleID = "6594eb94f31503705194"
 
   // -- click to show product img -- 
   const changeImage = (imageUrl) => {
@@ -27,82 +33,72 @@ const ProductDetails = ({ params }) => {
   };
   useEffect(() => {
     if (productDetails?.images?.length > 0) {
-      setMainImageUrl(productDetails.images[0]);
+      setMainImageUrl(productDetails.images[0].src);
     }
   }, [productDetails]);
 
 
-  // -- fetch Product Details By Id --
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const details = await fetchProductDetailsById(id);
-        setProductDetails(details);
+        dispatch(fetchProductById(id));
       } catch (error) {
-        console.error('Error fetching product details:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [id]);
-
-
-  // -- get all similar products -- 
-  useEffect(() => {
-    setLoading(true);
-    fetchProducts()
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching products:', error);
-        setLoading(false);
-      });
-  }, []);
+  }, [dispatch, id]);
 
 
   // -- desc show hide -- 
   const toggleShowMore = () => {
     setShowMore(!showMore);
   };
-  const description = productDetails?.desc
+  const description = productDetails?.short_description
   const truncatedText = typeof description === 'string' ? description.slice(0, 100) : description;
   const displayText = showMore ? description : truncatedText;
   const buttonText = showMore ? ' Show Less' : ' Show More';
 
 
   // discount percentage
-  const percentageDiscount = ((productDetails?.oldprice - productDetails?.price) / productDetails?.oldprice) * 100;
+  const percentageDiscount = ((productDetails?.regular_price - productDetails?.price) / productDetails?.oldprice) * 100;
 
 
   // -- ADD TO CART BUTTON --
   // -- get cart data --
   useEffect(() => {
-    getCartData()
-      .then((data) => {
-        setCartData(data?.filter(item => item.userId === roleID));
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-      });
-  }, []);
+    dispatch(addToCart());
+    dispatch(fetchCartData());
+  }, [dispatch]);
 
+  // add to cart 
   const handleCartClick = async (clickedItemId) => {
-    if (roleID === '') {
+    if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
-      const isItemInCart = cartData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      const isItemInCart = cart.some((item) => item?.productId === clickedItemId);
       if (isItemInCart) {
         CommonToast("error", "Product already in the cart");
       } else {
-        await addToCart(clickedItemId, roleID, 1);
+        dispatch(addToCart(clickedItemId, roleID));
+        dispatch(fetchCartData());
         try {
-          const updatedCartData = await getCartData();
-          setCartData(updatedCartData?.filter(item => item.userId === roleID));
-          CommonToast("success", "Product Added To Cart");
+          if (cart) {
+            const updatedCartData = cart.filter(item => item?.userId === roleID);
+            dispatch(fetchCartData());
+            console.log(updatedCartData);
+            CommonToast("success", "Product Added To Cart");
+          } else {
+            console.error('Error: Cart is undefined');
+          }
         } catch (error) {
           console.error('Error fetching updated cart data:', error);
         }
@@ -150,7 +146,7 @@ const ProductDetails = ({ params }) => {
                       <Carousel.Item key={index}>
                         <div className="item">
                           <div className="thumb">
-                            <img src={imageUrl} alt={`Image ${index + 1}`} onClick={() => changeImage(imageUrl)} />
+                            <img src={imageUrl.src} alt={`Image ${index + 1}`} onClick={() => changeImage(imageUrl.src)} />
                           </div>
                         </div>
                       </Carousel.Item>
@@ -164,7 +160,7 @@ const ProductDetails = ({ params }) => {
               </div>
               <div className="col-md-6 col-12 my-2">
                 <div className="product-div-right">
-                  <span className="product-name">{productDetails?.title}</span>
+                  <span className="product-name">{productDetails?.name}</span>
                   <p className="product-description">{displayText}
                     {description?.length > 100 && (
                       <span className="show-more" onClick={toggleShowMore}>
@@ -175,20 +171,20 @@ const ProductDetails = ({ params }) => {
                   <p className="s-price">Special price</p>
                   <div className="special-price">
                     <span className="product-price">₹{productDetails?.price}</span>
-                    <strike>₹{productDetails?.oldprice}</strike>
+                    <strike>₹{productDetails?.regular_price}</strike>
                     <h5 className="discount">{percentageDiscount.toFixed(2)}% OFF</h5>
                   </div>
                   <div className="pub-stars">
-                    <h4>{productDetails?.rating} <FaStar className="star-icon" /></h4>
+                    <h4>{productDetails?.rating_count} <FaStar className="star-icon" /></h4>
                     <a href="#reviewRating">952 Ratings, 198 Reviews •</a>
                   </div>
                   <p className="s-price">Product Details</p>
                   <div className="product-det">
-                    <p>Name: <span>{productDetails?.title}</span></p>
-                    <p>Material: <span>Soft Material</span></p>
+                    <p>Name: <span>{productDetails?.name}</span></p>
+                    <p>Material: <span>No chemical</span></p>
                     <p>No. of Compartments: <span>22</span></p>
                     <p>Multipack: <span>3</span></p>
-                    <p>Sizes: <span>{productDetails?.size}</span></p>
+                    <p>Category: <span>{productDetails?.categories[0]?.name}</span></p>
                     <p>Country of Origin: <span>India</span></p>
                     <p>Colour: <span>All Colour Available</span></p>
                   </div>
@@ -266,11 +262,11 @@ const ProductDetails = ({ params }) => {
 
       {/* -- Similar Products --  */}
       <div className="container-fluid pt-5 ps-3"><h2 className="section-heading">Similar Products</h2></div>
-      <ProductCarouselSec loading={loading} products={products} category={productDetails?.category} />
+      <ProductCarouselSec products={products} category={productDetails?.categories[0]?.name} />
 
       {/* -- People also viewed --  */}
       <div className="container-fluid pt-5 ps-3"><h2 className="section-heading">People also viewed</h2></div>
-      <ProductCarouselSec loading={loading} products={products} />
+      <ProductCarouselSec products={products} />
     </>
   )
 }

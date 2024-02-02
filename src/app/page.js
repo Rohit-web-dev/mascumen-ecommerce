@@ -11,7 +11,6 @@ import { fetchProducts } from "@/redux/slice/productsSlice";
 export default function Home() {
   const dispatch = useDispatch()
   const products = useSelector((state) => state.products.data)
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -25,32 +24,32 @@ export default function Home() {
 
       {/* -- Shirts For Girls Products --  */}
       <div className="container-fluid pt-5 ps-3"><h2 className="section-heading">Hair Oil For men and women</h2></div>
-      <ProductCarouselSec loading={loading} setLoading={setLoading} products={products} category="Hair" />
+      <ProductCarouselSec products={products} category="Hair" />
 
       {/* -- Shoes for men and women Products --  */}
       <div className="container-fluid pt-5 ps-3"><h2 className="section-heading">Shaving for men</h2></div>
-      <ProductCarouselSec loading={loading} setLoading={setLoading} products={products} category="Shaving" />
+      <ProductCarouselSec products={products} category="Shaving" />
 
       {/* -- Watches for men and women Products --  */}
       <div className="container-fluid pt-5 ps-3">
         <h2 className="section-heading">SKIN CARE for men and women</h2>
         <p className="section-para">Details to details is what makes mascumen different from the others.</p>
       </div>
-      <ProductCarouselSec loading={loading} setLoading={setLoading} products={products} category="SKIN CARE" />
+      <ProductCarouselSec products={products} category="SKIN CARE" />
 
       {/* -- Dulhan Sarees Products --  */}
       <div className="container-fluid pt-5 ps-3">
         <h2 className="section-heading">Shave gel for men and women</h2>
         <p className="section-para">all type of dulhan sarees available here</p>
       </div>
-      <ProductCarouselSec loading={loading} setLoading={setLoading} products={products} category="Shave gel" />
+      <ProductCarouselSec products={products} category="Shave gel" />
 
       {/* -- All type of Items Products --  */}
       <div className="container-fluid pt-5 ps-3">
         <h2 className="section-heading">All type of Products</h2>
         <p className="section-para">There are all type of items</p>
       </div>
-      <ProductCarouselSec loading={loading} setLoading={setLoading} products={products} />
+      <ProductCarouselSec products={products} />
 
       {/* -- Explore Products --  */}
       <ExploreProductSec />

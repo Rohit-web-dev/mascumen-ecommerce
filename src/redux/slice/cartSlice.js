@@ -14,10 +14,9 @@ export const addToCart = createAsyncThunk("addToCart", async (productId, userID)
         productItem: 1
       }
     );
-    console.log('Product added to cart:', response);
     return response.documents;
   } catch (error) {
-    console.error('Error adding product to cart:', error);
+    // console.error('Error adding product to cart:', error);
     throw error;
   }
 });
@@ -25,13 +24,12 @@ export const addToCart = createAsyncThunk("addToCart", async (productId, userID)
 export const fetchCartData = createAsyncThunk("fetchCartData", async () => {
   try {
     const response = await databases.listDocuments('658a5a2edc47302eb5d2', '65b9de309cc3fed93e3c');
-    console.log('Get cart data response:', response);
     if (!response) {
       throw new Error('Invalid response: Empty response');
     }
     return response.documents;
   } catch (error) {
-    console.error('Error getting cart data:', error);
+    // console.error('Error getting cart data:', error);
     throw error;
   }
 });
@@ -60,7 +58,6 @@ const cartSlice = createSlice({
       .addCase(addToCart.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        console.error('Error adding to cart:', action.error.message);
       })
 
       // get cart items 
@@ -74,7 +71,6 @@ const cartSlice = createSlice({
       .addCase(fetchCartData.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        console.error('Error getting cart data:', action.error.message);
       })
 
   },

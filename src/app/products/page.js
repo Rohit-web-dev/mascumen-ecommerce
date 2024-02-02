@@ -5,17 +5,23 @@ import "@/app/styles/style.css"
 import { FaEye, FaStar, FaCartPlus, FaSearch, FaHeart } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
 import Banner from '@/components/common/Banner';
-import { fetchProducts, addToCart, addToWishlist, getCartData, getWishlistData } from '@/appwrite/config';
 import Loader from '../loading';
 import PriceRangeFilter from '@/components/common/PriceRangeFilter';
 import CommonToast from '@/components/common/CommonToast';
 import userContext from '@/context/user/userContext';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "@/redux/slice/productsSlice";
+import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
+import { addToWishlist, fetchWishlist } from '@/redux/slice/wishlistSlice';
 
 const Products = () => {
+  const dispatch = useDispatch()
+  const products = useSelector((state) => state.products.data)
+  const cart = useSelector((state) => state.cart?.items)
+  const wishlist = useSelector((state) => state.wishlist?.items)
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -26,11 +32,11 @@ const Products = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [cartData, setCartData] = useState([]);
-  const [wishlistData, setWishlistData] = useState([]);
 
-  const currentUserID = useContext(userContext)
-  const roleID = currentUserID?.currentUserRollID
+  // const currentUserID = useContext(userContext)
+  // const roleID = currentUserID?.currentUserRollID
+  const roleID = "6594eb94f31503705194"
+
 
   // ------------------------------------------------------------------------------
   //  ********************* API CALL ***********************
@@ -40,12 +46,11 @@ const Products = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await fetchProducts();
-        setProducts(data);
-        setFilteredProducts(data); // Set filteredProducts initially to all products
+        dispatch(fetchProducts());
+        // setFilteredProducts(products); // Set filteredProducts initially to all products
         // Extract unique categories and brands from the products
-        const uniqueCategories = [...new Set(data.map(product => product.category))];
-        const uniqueBrands = [...new Set(data.map(product => product.brand))];
+        const uniqueCategories = [...new Set(products.map(product => product?.categories[0]?.name))];
+        const uniqueBrands = [...new Set(products.map(product => product?.brand))];
         setCategories(uniqueCategories);
         setBrands(uniqueBrands);
         setLoading(false);
@@ -54,10 +59,13 @@ const Products = () => {
         setLoading(false);
       }
     };
-    fetchData();
-    setSelectedCategory("All Categories"); // Set the default category
-  }, []);
+      fetchData();
+      setSelectedCategory("All Categories"); // Set the default category
+  }, [dispatch]);
 
+  useEffect(() => {
+    setFilteredProducts(products);
+  }, [products, categories]); 
 
 
   // ------------------------------------------------------------------------------
@@ -72,7 +80,7 @@ const Products = () => {
       setBrands(allBrands);
     } else {
       // Filter products based on the selected category
-      const filteredByCategory = products.filter(product => product.category === selectedCategory);
+      const filteredByCategory = products.filter(product => product?.categories[0]?.name === selectedCategory);
       // Extract unique brands from the filtered products
       const uniqueBrands = [...new Set(filteredByCategory.map(product => product.brand))];
       setBrands(uniqueBrands);
@@ -93,9 +101,9 @@ const Products = () => {
         : selectedCategory === "All Categories"
           ? products.filter(product => product.brand === selectedBrand)
           : selectedBrand === "All Brands"
-            ? products.filter(product => product.category === selectedCategory)
+            ? products.filter(product => product?.categories[0]?.name === selectedCategory)
             : products.filter(
-              product => product.category === selectedCategory && product.brand === selectedBrand
+              product => product?.categories[0]?.name === selectedCategory && product.brand === selectedBrand
             );
     // Extract unique price ranges from the filtered products
     const uniquePriceRanges = [...new Set(filteredProductsByCategoryAndBrand.map(product => product.price))];
@@ -114,7 +122,7 @@ const Products = () => {
   const handleCategoryChange = (selectedCategory) => {
     setSelectedCategory(selectedCategory);
     const filtered = selectedCategory !== "All Categories"
-      ? products.filter((product) => product.category === selectedCategory)
+      ? products.filter((product) => product?.categories[0]?.name === selectedCategory)
       : products;
     setFilteredProducts(filtered);
     setCurrentPage(1);
@@ -127,10 +135,10 @@ const Products = () => {
     // Apply brand and category filters
     const filtered = selectedBrand !== "All Brands"
       ? products.filter((product) =>
-        product.brand === selectedBrand && (selectedCategory === "All Categories" || product.category === selectedCategory)
+        product.brand === selectedBrand && (selectedCategory === "All Categories" || product?.categories[0]?.name === selectedCategory)
       )
       : selectedCategory !== "All Categories"
-        ? products.filter((product) => product.category === selectedCategory)
+        ? products.filter((product) => product?.categories[0]?.name === selectedCategory)
         : products;
     setFilteredProducts(filtered);
     setCurrentPage(1);
@@ -148,10 +156,10 @@ const Products = () => {
       )
       : selectedBrand !== "All Brands"
         ? products.filter((product) =>
-          product.brand === selectedBrand && (selectedCategory === "All Categories" || product.category === selectedCategory)
+          product.brand === selectedBrand && (selectedCategory === "All Categories" || product?.categories[0]?.name === selectedCategory)
         )
         : selectedCategory !== "All Categories"
-          ? products.filter((product) => product.category === selectedCategory)
+          ? products.filter((product) => product?.categories[0]?.name === selectedCategory)
           : products;
     setFilteredProducts(filtered);
     setSelectedPriceRange(priceRange); // Set selectedPriceRange to null when clearing filters
@@ -193,7 +201,7 @@ const Products = () => {
 
   const itemsPerPage = 12;
   const filteredData = filteredProducts.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -226,28 +234,40 @@ const Products = () => {
 
   // -- get cart data --
   useEffect(() => {
-    getCartData()
-      .then((data) => {
-        setCartData(data?.filter(item => item.userId === roleID));
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-      });
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(addToCart());
+        dispatch(fetchCartData());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
 
+  // add to cart 
   const handleCartClick = async (clickedItemId) => {
     if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
-      const isItemInCart = cartData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      const isItemInCart = cart.some((item) => item?.productId === clickedItemId);
       if (isItemInCart) {
         CommonToast("error", "Product already in the cart");
       } else {
-        await addToCart(clickedItemId, roleID, 1);
+        dispatch(addToCart(clickedItemId, roleID));
+        dispatch(fetchCartData());
         try {
-          const updatedCartData = await getCartData();
-          setCartData(updatedCartData?.filter(item => item.userId === roleID));
-          CommonToast("success", "Product Added To Cart");
+          if (cart) {
+            const updatedCartData = cart.filter(item => item?.userId === roleID);
+            dispatch(fetchCartData());
+            // console.log(updatedCartData);
+            CommonToast("success", "Product Added To Cart");
+          } else {
+            console.error('Error: Cart is undefined');
+          }
         } catch (error) {
           console.error('Error fetching updated cart data:', error);
         }
@@ -261,33 +281,44 @@ const Products = () => {
   //                            ADD TO Wishlist
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  // -- get cart data --
+  // -- get wishlist data --
   useEffect(() => {
-    getWishlistData()
-      .then((data) => {
-        setWishlistData(data?.filter(item => item.userId === roleID));
-      })
-      .catch((error) => {
-        console.error('Error fetching cart data:', error);
-      });
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        dispatch(addToWishlist());
+        dispatch(fetchWishlist());
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
 
-
+  // add to wishlist 
   const handleWishlistClick = async (clickedItemId) => {
     if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
-      const isItemInCart = wishlistData?.some((item) => item?.ecommerceWebProducts[0]?.$id === clickedItemId);
+      const isItemInCart = wishlist.some((item) => item?.productId === clickedItemId);
       if (isItemInCart) {
         CommonToast("error", "Product already in the wishlist");
       } else {
-        await addToWishlist(clickedItemId, roleID, 1);
+        dispatch(addToWishlist(clickedItemId, roleID));
+        dispatch(fetchWishlist());
         try {
-          const updatedWishlistData = await getWishlistData();
-          setWishlistData(updatedWishlistData?.filter(item => item.userId === roleID));
-          CommonToast("success", "Product Added To Wishlist");
+          if (wishlist) {
+            const updatedCartData = wishlist.filter(item => item?.userId === roleID);
+            dispatch(fetchWishlist());
+            // console.log(updatedCartData);
+            CommonToast("success", "Product Added To wishlist");
+          } else {
+            console.error('Error: wishlist is undefined');
+          }
         } catch (error) {
-          console.error('Error fetching updated cart data:', error);
+          console.error('Error fetching updated wishlist data:', error);
         }
       }
     }
@@ -376,24 +407,24 @@ const Products = () => {
                   <>
                     {/* Display products */}
                     {currentItems.map((item) => (
-                      <div key={item?.$id} className="col-lg-3 col-md-6 my-1">
+                      <div key={item?.id} className="col-lg-3 col-md-6 my-1">
                         <div className="item">
                           <div className="thumb">
                             <div className="hover-content">
                               <ul>
-                                <li><Link href={`/products/${item?.$id}`}><FaEye className="icon" /></Link></li>
-                                <li><a onClick={() => handleWishlistClick(item?.$id)}><FaHeart className="icon" /></a></li>
-                                <li><a onClick={() => handleCartClick(item?.$id)}><FaCartPlus className="icon" /></a></li>
+                                <li><Link href={`/products/${item?.id}`}><FaEye className="icon" /></Link></li>
+                                <li><a onClick={() => handleWishlistClick(item?.id)}><FaHeart className="icon" /></a></li>
+                                <li><a onClick={() => handleCartClick(item?.id)}><FaCartPlus className="icon" /></a></li>
                               </ul>
                             </div>
-                            <img src={item?.img} />
+                            <img src={item?.images[0]?.src} />
                           </div>
                           <div className="down-content">
-                            <h4>{item?.title}</h4>
+                            <h4>{item?.name}</h4>
                             <div className="d-flex justify-content-between">
                               <span>₹{item?.price}</span>
                               <ul className="stars">
-                                <li>{renderStars(item?.rating)}</li>
+                                <li>{renderStars(item?.rating_count)}</li>
                               </ul>
                             </div>
                           </div>
