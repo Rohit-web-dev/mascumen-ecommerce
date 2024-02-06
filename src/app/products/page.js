@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link'
 import "@/app/styles/style.css"
 import { FaEye, FaStar, FaCartPlus, FaSearch, FaHeart } from "react-icons/fa";
@@ -8,17 +8,18 @@ import Banner from '@/components/common/Banner';
 import Loader from '../loading';
 import PriceRangeFilter from '@/components/common/PriceRangeFilter';
 import CommonToast from '@/components/common/CommonToast';
-import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "@/redux/slice/productsSlice";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
 import { addToWishlist, fetchWishlist } from '@/redux/slice/wishlistSlice';
+import { getCurrentUser } from '@/redux/slice/userSlice';
 
 const Products = () => {
   const dispatch = useDispatch()
   const products = useSelector((state) => state.products.data)
   const cart = useSelector((state) => state.cart?.items)
   const wishlist = useSelector((state) => state.wishlist?.items)
+  const user = useSelector((state) => state.user.user)
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,9 +34,12 @@ const Products = () => {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
 
-  // const currentUserID = useContext(userContext)
-  // const roleID = currentUserID?.currentUserRollID
+  // const roleID = user?.$id
   const roleID = "6594eb94f31503705194"
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
 
 
   // ------------------------------------------------------------------------------
@@ -59,13 +63,13 @@ const Products = () => {
         setLoading(false);
       }
     };
-      fetchData();
-      setSelectedCategory("All Categories"); // Set the default category
+    fetchData();
+    setSelectedCategory("All Categories"); // Set the default category
   }, [dispatch]);
 
   useEffect(() => {
     setFilteredProducts(products);
-  }, [products, categories]); 
+  }, [products, categories]);
 
 
   // ------------------------------------------------------------------------------
@@ -299,6 +303,7 @@ const Products = () => {
 
   // add to wishlist 
   const handleWishlistClick = async (clickedItemId) => {
+    console.log(roleID);
     if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
@@ -440,21 +445,32 @@ const Products = () => {
                     <ul>
                       <li><a onClick={handleFirstClick}>&lt;&lt;</a></li>
                       <li><a onClick={handlePrevClick}>&lt;</a></li>
+                      {/* Display only the current page, the page before, and after it */}
                       {Array.from({
                         length: Math.ceil(filteredData.length / itemsPerPage),
-                      }).map((_, index) => (
-                        <li
-                          key={index}
-                          className={currentPage === index + 1 ? 'active' : ''}
-                        >
-                          <a onClick={() => paginate(index + 1)}>{index + 1}</a>
-                        </li>
-                      ))}
+                      }).map((_, index) => {
+                        if (
+                          index + 1 === 1 || // first page
+                          index + 1 === currentPage || // current page
+                          index + 1 === Math.ceil(filteredData.length / itemsPerPage) // last page
+                        ) {
+                          return (
+                            <li
+                              key={index}
+                              className={currentPage === index + 1 ? 'active' : ''}
+                            >
+                              <a onClick={() => paginate(index + 1)}>{index + 1}</a>
+                            </li>
+                          );
+                        }
+                        return null; // don't render other page numbers
+                      })}
                       <li><a onClick={handleNextClick}>&gt;</a></li>
                       <li><a onClick={handleLastClick}>&gt;&gt;</a></li>
                     </ul>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>

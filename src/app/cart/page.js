@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import "@/app/styles/style.css"
 import { FaTrashAlt } from "react-icons/fa";
 import img from '../../../public/assets/images/products-page-heading.jpg'
@@ -9,28 +9,42 @@ import Loader from '../loading';
 import CommonToast from '@/components/common/CommonToast';
 import EmptyPage from '@/components/common/EmptyPage';
 import Link from 'next/link';
-import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCartData } from '@/redux/slice/cartSlice';
 import { fetchProducts } from '@/redux/slice/productsSlice';
+import appwriteService from '@/appwrite/config';
+import { currentUser } from '@/redux/slice/authSlice';
 
 const Cart = () => {
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const products = useSelector((state) => state.products.data)
+  const auth = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(true);
   const [subTotal, setSubTotal] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [mergedData, setMergedData] = useState([]);
 
-
   const taxRate = 0.05;
   const shippingRate = 15.0;
 
-  // const currentUserID = useContext(userContext)
-  // const roleID = currentUserID?.currentUserRollID
-  const roleID = "6594eb94f31503705194"
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        dispatch(currentUser({ userData }));
+      } catch (error) {
+        // Handle errors here
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchData(); // Call the async function
+  }, [dispatch]);
+
+  const roleID = auth?.userData?.$id
+
+  console.log("auth", auth);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,7 +79,7 @@ const Cart = () => {
         .catch(error => console.error('Error fetching data:', error));
     }
     fetchData();
-  }, [cart, products, roleID]);
+  }, [cart, products, auth]);
 
 
   useEffect(() => {

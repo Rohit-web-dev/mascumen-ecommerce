@@ -10,12 +10,20 @@ import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
 import { addToWishlist, fetchWishlist } from '@/redux/slice/wishlistSlice';
+import { getCurrentUser } from '@/redux/slice/userSlice';
 
 const ProductCarouselSec = ({ products, category }) => {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const wishlist = useSelector((state) => state.wishlist?.items)
+  const user = useSelector((state) => state.user.user)
+
+  const roleID = user?.$id
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
 
   // cart data 
   useEffect(() => {
@@ -51,10 +59,6 @@ const ProductCarouselSec = ({ products, category }) => {
   }, [dispatch]);
 
 
-  const currentUserID = useContext(userContext)
-  const roleID = currentUserID?.currentUserRollID
-
-
   // Filter products based on the category
   const filteredProducts = category ? products.filter(item => item?.categories?.[0]?.name === category) : products;
 
@@ -85,7 +89,7 @@ const ProductCarouselSec = ({ products, category }) => {
           if (cart) {
             const updatedCartData = cart.filter(item => item?.userId === roleID);
             dispatch(fetchCartData());
-            console.log(updatedCartData);
+            // console.log(updatedCartData);
             CommonToast("success", "Product Added To Cart");
           } else {
             console.error('Error: Cart is undefined');
@@ -114,7 +118,7 @@ const ProductCarouselSec = ({ products, category }) => {
           if (wishlist) {
             const updatedCartData = wishlist.filter(item => item?.userId === roleID);
             dispatch(fetchWishlist());
-            console.log(updatedCartData);
+            // console.log(updatedCartData);
             CommonToast("success", "Product Added To wishlist");
           } else {
             console.error('Error: wishlist is undefined');

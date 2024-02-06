@@ -2,7 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { databases } from '@/appwrite/config';
 import { ID } from 'appwrite';
 
-export const addToWishlist = createAsyncThunk("addToWishlist", async (productId, userID) => {
+export const addToWishlist = createAsyncThunk("addToWishlist", async (productId, userId) => {
+  console.log(userId);
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',

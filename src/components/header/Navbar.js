@@ -5,17 +5,56 @@ import Link from 'next/link'
 import { useDispatch, useSelector } from "react-redux";
 import appwriteService from '@/appwrite/config';
 import { fetchCartData } from '@/redux/slice/cartSlice';
+import { login, logout } from '@/redux/slice/authSlice';
 
-const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
-  const [cartItems, setCartItems] = useState();
+const Navbar = ({ handleShow }) => {
   const dispatch = useDispatch()
+  const auth = useSelector((state) => state.auth)
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [cartItems, setCartItems] = useState();
   const cart = useSelector((state) => state.cart?.items)
   const [activeLink, setActiveLink] = useState('/');
+
   const handleActiveLink = (path) => {
     setActiveLink(path);
   };
 
-  const roleID = "6594eb94f31503705194"
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        if (userData) {
+          dispatch(login({ userData }));
+          setCurrentUser(userData);
+          setIsLoggedIn(true); // Update isLoggedIn state to true after successful login
+        } else {
+          dispatch(logout());
+          setCurrentUser(null);
+          setIsLoggedIn(false); // Update isLoggedIn state to false after logout
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        dispatch(logout());
+        setCurrentUser(null);
+        setIsLoggedIn(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
+
+  useEffect(() => {
+    setIsLoggedIn(auth.status);
+  }, [auth.status]);
+
+
+  console.log("auth", auth);
+
+  // const roleID = auth?.userData?.$id
 
   // -- cart item counting -- 
   useEffect(() => {
@@ -23,19 +62,20 @@ const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
   }, [dispatch]);
 
   useEffect(() => {
+    const roleID = auth?.userData?.$id;
     const fetchData = async () => {
       const filteredUser = cart.filter(item => item && item?.userId === roleID);
       setCartItems(filteredUser);
     };
     fetchData();
-  }, [cart, roleID]);
+  }, [cart, auth]);
 
 
   // Sum of the productItem values
   const totalProductItems = cartItems?.reduce((sum, item) => {
     const userId = item?.userId;
     if (userId) {
-      return sum + (item?.productItem || 0); 
+      return sum + (item?.productItem || 0);
     } else {
       return sum;
     }
@@ -46,6 +86,8 @@ const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
     try {
       await appwriteService.logout();
       setIsLoggedIn(false);
+      localStorage.removeItem('isLoggedIn');
+      dispatch(logout());
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -81,12 +123,12 @@ const Navbar = ({ handleShow, currentUser, isLoggedIn, setIsLoggedIn }) => {
         <Link className={`nav-link ${activeLink === '/contact' ? 'active' : ''}`} onClick={() => handleActiveLink('/contact')} href='/contact'>Contact Us</Link>
       </li>
 
-      {isLoggedIn ?
+      { isLoggedIn ?
         <li className="nav-item dropdown">
-          <Link className="nav-link logged-user" href="/" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <FaRegUserCircle /><span>{currentUser?.name}</span>
+          <Link className="nav-link logged-user" href="/" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <FaRegUserCircle /><span>{auth?.userData?.name}</span>
           </Link>
-          <ul className="dropdown-menu child-drop" aria-labelledby="navbarDropdown">
+          <ul className="dropdown-menu child-drop" aria-labelledby="userDropdown">
             <li><Link className="dropdown-item" href='#'>Profile</Link></li>
             <li><Link className="dropdown-item" href='#'>Setting</Link></li>
             <li><Link className="dropdown-item" href='#' onClick={handleLogout}>Logout</Link></li>

@@ -3,22 +3,28 @@ import React, { useState } from 'react';
 import appwriteService from "@/appwrite/config";
 import { useRouter } from "next/navigation";
 import CommonToast from '../common/CommonToast';
+import { useDispatch } from "react-redux";
+import { login } from "../../redux/slice/authSlice"
 
-const Login = ({ handleClose }) => {
+
+const Login = ({ handleClose, handleSucess }) => {
+  const dispatch = useDispatch()
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("")
 
-  const login = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const session = await appwriteService.login(formData);
       if (session) {
         console.log('Logged in:', session);
+        dispatch(login({ userData: session }));
         CommonToast("success", "Logged in successfully");
-        handleClose()
+        handleSucess();
       }
     } catch (error) {
       setError('Login failed:', error.message);
@@ -28,7 +34,7 @@ const Login = ({ handleClose }) => {
 
   return (
     <>
-      <form onSubmit={login}>
+      <form onSubmit={handleLogin}>
         <div className="mb-3">
           <label htmlFor="exampleInputEmail1" className="form-label">
             Email

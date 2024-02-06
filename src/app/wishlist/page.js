@@ -1,27 +1,32 @@
 "use client"
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import "@/app/styles/style.css"
 import { FaStar, FaTrashAlt } from "react-icons/fa";
 import Loader from '../loading';
 import CommonToast from '@/components/common/CommonToast';
 import Link from 'next/link';
 import EmptyPage from '@/components/common/EmptyPage';
-import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from '@/redux/slice/productsSlice';
 import { fetchWishlist } from '@/redux/slice/wishlistSlice';
 import { databases } from '@/appwrite/config';
+import { getCurrentUser } from '@/redux/slice/userSlice';
 
 const Wishlist = () => {
   const dispatch = useDispatch()
   const wishlist = useSelector((state) => state.wishlist?.items)
   const products = useSelector((state) => state.products.data)
+  const user = useSelector((state) => state.user.user)
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // const currentUserID = useContext(userContext)
-  // const roleID = currentUserID?.currentUserRollID
-  const roleID = "6594eb94f31503705194"
+  const roleID = user?.$id
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+
+  console.log("User state", user?.$id);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,14 +51,14 @@ const Wishlist = () => {
       const filteredCartData = products.filter(product => cartProductIds.includes(product.id));
 
       Promise.all([filteredCartData, filteredUser])
-      .then(([filteredCartData, filteredUser]) => {
-        const mergedData = filteredCartData.map(product => ({
-          ...product,
-          ...filteredUser.find(cartItem => cartItem.productId === product.id)
-        }));
-        setWishlistItems(mergedData);
-      })
-      .catch(error => console.error('Error fetching data:', error));
+        .then(([filteredCartData, filteredUser]) => {
+          const mergedData = filteredCartData.map(product => ({
+            ...product,
+            ...filteredUser.find(cartItem => cartItem.productId === product.id)
+          }));
+          setWishlistItems(mergedData);
+        })
+        .catch(error => console.error('Error fetching data:', error));
     }
     fetchData();
   }, [wishlist, products, roleID]);

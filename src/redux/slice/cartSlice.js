@@ -3,6 +3,7 @@ import { databases } from '@/appwrite/config';
 import { ID } from 'appwrite';
 
 export const addToCart = createAsyncThunk("addToCart", async (productId, userID) => {
+  console.log(userID);
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',

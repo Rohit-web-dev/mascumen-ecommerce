@@ -7,36 +7,67 @@ import { FaBars } from "react-icons/fa6";
 import Navbar from './Navbar';
 import Login from '../auth/Login';
 import Register from '../auth/Register';
+import { useDispatch } from "react-redux";
 import appwriteService from '@/appwrite/config';
 import { Modal } from 'react-bootstrap';
+import { login, logout } from '@/redux/slice/authSlice';
 
 
 const Header = () => {
-  const [currentUser, setCurrentUser] = useState();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [currentUser, setCurrentUser] = useState();
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch()
   const [activeTab, setActiveTab] = useState('tab1');
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  const handleSucess = async () => {
+    setShow(false)
+    try {
+      const userData = await appwriteService.getCurrentUser();
+      if (userData) {
+        dispatch(login({ userData }));
+      } else {
+        dispatch(logout());
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      dispatch(logout());
+    } 
+  }
+
   // -- sign in and sign up modal tab button --
   const showTab = (tabId) => {
     setActiveTab(tabId);
   };
-  
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const users = await appwriteService.getCurrentUser();
-        setCurrentUser(users);
-        const loggedIn = await appwriteService.isLoggedIn();
-        setIsLoggedIn(loggedIn);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-    fetchUsers();
-  }, []);
+
+  // useEffect(() => {
+  //   appwriteService.getCurrentUser()
+  //   .then((userData) => {
+  //     if(userData) {
+  //       dispatch(login({userData}))
+  //     }else {
+  //       dispatch(logout({userData}))
+  //     }
+  //   })
+  //   .finally(()=> setLoading(false))
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     try {
+  //       const users = await appwriteService.getCurrentUser();
+  //       setCurrentUser(users);
+  //       const loggedIn = await appwriteService.isLoggedIn();
+  //       setIsLoggedIn(loggedIn);
+  //     } catch (error) {
+  //       console.error('Error fetching users:', error);
+  //     }
+  //   };
+  //   fetchUsers();
+  // }, []);
 
 
   return (
@@ -51,7 +82,7 @@ const Header = () => {
               <FaBars className="toggler-icon" />
             </button>
             <div className="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-              <Navbar handleShow={handleShow} currentUser={currentUser} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+              <Navbar handleShow={handleShow} />
             </div>
           </div>
         </nav>
@@ -73,7 +104,7 @@ const Header = () => {
         </Modal.Header>
         <Modal.Body>
           <div id="tab1" className={`tab-content ${activeTab === 'tab1' ? 'active-tab' : 'hidden-tab'}`}>
-            <Login handleClose={handleClose} />
+            <Login handleClose={handleClose} handleSucess={handleSucess} />
           </div>
           <div id="tab2" className={`tab-content ${activeTab === 'tab2' ? 'active-tab' : 'hidden-tab'}`}>
             <Register handleClose={handleClose} />

@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById, selectSelectedProduct } from '@/redux/slice/productsSlice';
 import { fetchProducts } from "@/redux/slice/productsSlice";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
-
+import { getCurrentUser } from '@/redux/slice/userSlice';
 
 const ProductDetails = ({ params }) => {
   const id = params.id
@@ -21,11 +21,16 @@ const ProductDetails = ({ params }) => {
   const productDetails = useSelector(selectSelectedProduct);
   const products = useSelector((state) => state.products.data)
   const cart = useSelector((state) => state.cart?.items)
+  const user = useSelector((state) => state.user.user)
   const [loading, setLoading] = useState(true);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [showMore, setShowMore] = useState(false);
 
-  const roleID = "6594eb94f31503705194"
+  const roleID = user?.$id
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
 
   // -- click to show product img -- 
   const changeImage = (imageUrl) => {

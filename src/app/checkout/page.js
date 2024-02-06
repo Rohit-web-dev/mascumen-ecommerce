@@ -1,21 +1,22 @@
 "use client"
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import "@/app/styles/style.css"
 import Banner from '@/components/common/Banner'
 import img from '../../../public/assets/images/about-us-page-heading.jpg'
-import { getCartData, addOrderAllDetails } from '@/appwrite/config';
+import { addOrderAllDetails } from '@/appwrite/config';
 import CommonToast from '@/components/common/CommonToast';
 import Loader from '../loading';
 import { useForm } from 'react-hook-form';
-import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCartData } from '@/redux/slice/cartSlice';
 import { fetchProducts } from '@/redux/slice/productsSlice';
+import { getCurrentUser } from '@/redux/slice/userSlice';
 
 const Checkout = () => {
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const products = useSelector((state) => state.products.data)
+  const user = useSelector((state) => state.user.user)
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,9 +32,11 @@ const Checkout = () => {
     setIsChecked(!isChecked);
   };
 
-  // const currentUserID = useContext(userContext)
-  // const roleID = currentUserID?.currentUserRollID
-  const roleID = "6594eb94f31503705194"
+  const roleID = user?.$id
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
 
   useEffect(() => {
     const fetchData = async () => {

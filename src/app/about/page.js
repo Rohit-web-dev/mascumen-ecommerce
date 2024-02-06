@@ -10,19 +10,7 @@ import Link from "next/link";
 import OurTeam from "@/components/about/OurTeam";
 import OurServices from "@/components/about/OurServices";
 import SubscribeSec from "@/components/home/SubscribeSec";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "@/redux/slice/productsSlice";
-
 const About = () => {
-
-  const dispatch = useDispatch()
-  const state = useSelector((state) => state.products.data)
-
-  useEffect(() => {
-    dispatch(fetchProducts());
-  }, [dispatch]);
-
-  console.log("State", state?.[0]?.categories?.[0]?.name);
 
   return (
     <>
