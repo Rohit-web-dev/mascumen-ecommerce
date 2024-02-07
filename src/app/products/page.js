@@ -12,14 +12,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "@/redux/slice/productsSlice";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
 import { addToWishlist, fetchWishlist } from '@/redux/slice/wishlistSlice';
-import { getCurrentUser } from '@/redux/slice/userSlice';
+import appwriteService from '@/appwrite/config';
+import { currentUser } from '@/redux/slice/authSlice';
 
 const Products = () => {
   const dispatch = useDispatch()
   const products = useSelector((state) => state.products.data)
   const cart = useSelector((state) => state.cart?.items)
   const wishlist = useSelector((state) => state.wishlist?.items)
-  const user = useSelector((state) => state.user.user)
+  const auth = useSelector((state) => state.auth)
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,12 +35,19 @@ const Products = () => {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
 
-  // const roleID = user?.$id
-  const roleID = "6594eb94f31503705194"
-
   useEffect(() => {
-    dispatch(getCurrentUser());
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        dispatch(currentUser({ userData }));
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchData();
   }, [dispatch]);
+
+  const roleID = auth?.userData?.$id
 
 
   // ------------------------------------------------------------------------------
@@ -261,7 +269,7 @@ const Products = () => {
       if (isItemInCart) {
         CommonToast("error", "Product already in the cart");
       } else {
-        dispatch(addToCart(clickedItemId, roleID));
+        dispatch(addToCart({clickedItemId, roleID}));
         dispatch(fetchCartData());
         try {
           if (cart) {
@@ -303,7 +311,6 @@ const Products = () => {
 
   // add to wishlist 
   const handleWishlistClick = async (clickedItemId) => {
-    console.log(roleID);
     if (roleID === '' || roleID === undefined) {
       CommonToast("error", "You are not logged in user");
     } else {
@@ -311,7 +318,7 @@ const Products = () => {
       if (isItemInCart) {
         CommonToast("error", "Product already in the wishlist");
       } else {
-        dispatch(addToWishlist(clickedItemId, roleID));
+        dispatch(addToWishlist({clickedItemId, roleID}));
         dispatch(fetchWishlist());
         try {
           if (wishlist) {

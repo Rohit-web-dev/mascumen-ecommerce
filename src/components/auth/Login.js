@@ -9,7 +9,6 @@ import { login } from "../../redux/slice/authSlice"
 
 const Login = ({ handleClose, handleSucess }) => {
   const dispatch = useDispatch()
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,7 +20,7 @@ const Login = ({ handleClose, handleSucess }) => {
     try {
       const session = await appwriteService.login(formData);
       if (session) {
-        console.log('Logged in:', session);
+        // console.log('Logged in:', session);
         dispatch(login({ userData: session }));
         CommonToast("success", "Logged in successfully");
         handleSucess();
@@ -71,7 +70,7 @@ const Login = ({ handleClose, handleSucess }) => {
         <p className="note">
           *Note: You don't have an account; please click the signup button
         </p>
-        {error && <p className="text-red-600 mt-8 text-center">{error}</p>}
+        {error && <p className="text-danger mt-8 text-center">{error}</p>}
         <div className="d-flex justify-content-end py-3">
           <button
             type="button"

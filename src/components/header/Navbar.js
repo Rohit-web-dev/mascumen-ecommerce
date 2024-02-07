@@ -52,10 +52,6 @@ const Navbar = ({ handleShow }) => {
   }, [auth.status]);
 
 
-  console.log("auth", auth);
-
-  // const roleID = auth?.userData?.$id
-
   // -- cart item counting -- 
   useEffect(() => {
     dispatch(fetchCartData());

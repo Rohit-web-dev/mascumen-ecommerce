@@ -10,13 +10,14 @@ import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCartData } from '@/redux/slice/cartSlice';
 import { fetchProducts } from '@/redux/slice/productsSlice';
-import { getCurrentUser } from '@/redux/slice/userSlice';
+import appwriteService from '@/appwrite/config';
+import { currentUser } from '@/redux/slice/authSlice';
 
 const Checkout = () => {
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const products = useSelector((state) => state.products.data)
-  const user = useSelector((state) => state.user.user)
+  const auth = useSelector((state) => state.auth)
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +33,19 @@ const Checkout = () => {
     setIsChecked(!isChecked);
   };
 
-  const roleID = user?.$id
-
   useEffect(() => {
-    dispatch(getCurrentUser());
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        dispatch(currentUser({ userData }));
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchData();
   }, [dispatch]);
+
+  const roleID = auth?.userData?.$id
 
   useEffect(() => {
     const fetchData = async () => {
@@ -194,8 +203,9 @@ const Checkout = () => {
                         id='country'
                         className={`custom-select form-control ${errors.country ? 'is-invalid' : ''}`}
                         {...register('country', { required: 'This field is required' })}
+                        defaultValue="Select Country"
                       >
-                        <option value="" disabled selected>Select Country</option>
+                        <option value="Select Country" disabled>Select Country</option>
                         <option value="Afghanistan">Afghanistan</option>
                         <option value="Albania">Albania</option>
                         <option value="Algeria">Algeria</option>
@@ -265,8 +275,8 @@ const Checkout = () => {
                       </div>
                       <div className="col-md-6 form-group my-2">
                         <label className="mb-1" htmlFor='dCountry'>Country</label>
-                        <select className="custom-select form-control" id='dCountry' name="dCountry" value={checkoutDetails.dCountry} onChange={handleChange}>
-                          <option value="" selected>United States</option>
+                        <select className="custom-select form-control" id='dCountry' name="dCountry" value={checkoutDetails.dCountry} onChange={handleChange}  defaultValue="Select Country">
+                          <option value="Select Country">United States</option>
                           <option value="Afghanistan">Afghanistan</option>
                           <option value="Albania">Albania</option>
                           <option value="Algeria">Algeria</option>

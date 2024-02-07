@@ -2,15 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { databases } from '@/appwrite/config';
 import { ID } from 'appwrite';
 
-export const addToWishlist = createAsyncThunk("addToWishlist", async (productId, userId) => {
-  console.log(userId);
+export const addToWishlist = createAsyncThunk("addToWishlist", async (products) => {
+  const productId = products?.clickedItemId
+  const userId = products?.roleID
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',
       '65bb757810e62620cd15',
       ID.unique(),
       {
-        userId: "6594eb94f31503705194",
+        userId: userId,
         productId: productId,
         productItem: 1
       }

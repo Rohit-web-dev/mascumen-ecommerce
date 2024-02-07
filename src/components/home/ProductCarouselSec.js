@@ -6,24 +6,32 @@ import Carousel from 'better-react-carousel'
 import { FaEye, FaStar, FaCartPlus, FaHeart } from "react-icons/fa";
 import Loader from "@/app/loading";
 import CommonToast from '../common/CommonToast';
-import userContext from '@/context/user/userContext';
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
 import { addToWishlist, fetchWishlist } from '@/redux/slice/wishlistSlice';
-import { getCurrentUser } from '@/redux/slice/userSlice';
+import appwriteService from '@/appwrite/config';
+import { currentUser } from '@/redux/slice/authSlice';
 
 const ProductCarouselSec = ({ products, category }) => {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart?.items)
   const wishlist = useSelector((state) => state.wishlist?.items)
-  const user = useSelector((state) => state.user.user)
-
-  const roleID = user?.$id
+  const auth = useSelector((state) => state.auth)
 
   useEffect(() => {
-    dispatch(getCurrentUser());
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        dispatch(currentUser({ userData }));
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchData();
   }, [dispatch]);
+
+  const roleID = auth?.userData?.$id
 
   // cart data 
   useEffect(() => {
@@ -80,10 +88,11 @@ const ProductCarouselSec = ({ products, category }) => {
       CommonToast("error", "You are not logged in user");
     } else {
       const isItemInCart = cart.some((item) => item?.productId === clickedItemId);
-      if (isItemInCart) {
+      const isUserInCart = cart.some((item) => item?.userId === roleID);
+      if (isItemInCart && isUserInCart) {
         CommonToast("error", "Product already in the cart");
       } else {
-        dispatch(addToCart(clickedItemId, roleID));
+        dispatch(addToCart({clickedItemId, roleID}));
         dispatch(fetchCartData());
         try {
           if (cart) {
@@ -112,7 +121,7 @@ const ProductCarouselSec = ({ products, category }) => {
       if (isItemInCart) {
         CommonToast("error", "Product already in the wishlist");
       } else {
-        dispatch(addToWishlist(clickedItemId, roleID));
+        dispatch(addToWishlist({clickedItemId, roleID}));
         dispatch(fetchWishlist());
         try {
           if (wishlist) {

@@ -10,23 +10,30 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from '@/redux/slice/productsSlice';
 import { fetchWishlist } from '@/redux/slice/wishlistSlice';
 import { databases } from '@/appwrite/config';
-import { getCurrentUser } from '@/redux/slice/userSlice';
+import appwriteService from '@/appwrite/config';
+import { currentUser } from '@/redux/slice/authSlice';
 
 const Wishlist = () => {
   const dispatch = useDispatch()
   const wishlist = useSelector((state) => state.wishlist?.items)
   const products = useSelector((state) => state.products.data)
-  const user = useSelector((state) => state.user.user)
+  const auth = useSelector((state) => state.auth)
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const roleID = user?.$id
-
   useEffect(() => {
-    dispatch(getCurrentUser());
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        dispatch(currentUser({ userData }));
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchData();
   }, [dispatch]);
 
-  console.log("User state", user?.$id);
+  const roleID = auth?.userData?.$id
 
   useEffect(() => {
     const fetchData = async () => {

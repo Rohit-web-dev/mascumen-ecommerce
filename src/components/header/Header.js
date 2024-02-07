@@ -35,7 +35,7 @@ const Header = () => {
     } catch (error) {
       console.error('Error fetching user data:', error);
       dispatch(logout());
-    } 
+    }
   }
 
   // -- sign in and sign up modal tab button --
@@ -107,7 +107,7 @@ const Header = () => {
             <Login handleClose={handleClose} handleSucess={handleSucess} />
           </div>
           <div id="tab2" className={`tab-content ${activeTab === 'tab2' ? 'active-tab' : 'hidden-tab'}`}>
-            <Register handleClose={handleClose} />
+            <Register handleClose={handleClose} handleSucess={handleSucess} />
           </div>
         </Modal.Body>
       </Modal>

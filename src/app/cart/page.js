@@ -35,16 +35,15 @@ const Cart = () => {
         const userData = await appwriteService.getCurrentUser();
         dispatch(currentUser({ userData }));
       } catch (error) {
-        // Handle errors here
         console.error('Error fetching user data:', error);
       }
     };
-    fetchData(); // Call the async function
+    fetchData();
   }, [dispatch]);
 
   const roleID = auth?.userData?.$id
 
-  console.log("auth", auth);
+  // console.log("auth", auth);
 
   useEffect(() => {
     const fetchData = async () => {

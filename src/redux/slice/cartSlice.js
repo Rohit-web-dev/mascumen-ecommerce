@@ -2,15 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { databases } from '@/appwrite/config';
 import { ID } from 'appwrite';
 
-export const addToCart = createAsyncThunk("addToCart", async (productId, userID) => {
-  console.log(userID);
+export const addToCart = createAsyncThunk("addToCart", async (products) => {
+  const productId = products?.clickedItemId
+  const userId = products?.roleID
   try {
     const response = await databases.createDocument(
       '658a5a2edc47302eb5d2',
       '65b9de309cc3fed93e3c',
       ID.unique(),
       {
-        userId: "6594eb94f31503705194",
+        userId: userId,
         productId: productId,
         productItem: 1
       }

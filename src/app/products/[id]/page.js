@@ -13,7 +13,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById, selectSelectedProduct } from '@/redux/slice/productsSlice';
 import { fetchProducts } from "@/redux/slice/productsSlice";
 import { addToCart, fetchCartData } from '@/redux/slice/cartSlice';
-import { getCurrentUser } from '@/redux/slice/userSlice';
+import appwriteService from '@/appwrite/config';
+import { currentUser } from '@/redux/slice/authSlice';
 
 const ProductDetails = ({ params }) => {
   const id = params.id
@@ -21,16 +22,24 @@ const ProductDetails = ({ params }) => {
   const productDetails = useSelector(selectSelectedProduct);
   const products = useSelector((state) => state.products.data)
   const cart = useSelector((state) => state.cart?.items)
-  const user = useSelector((state) => state.user.user)
+  const auth = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(true);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [showMore, setShowMore] = useState(false);
 
-  const roleID = user?.$id
-
   useEffect(() => {
-    dispatch(getCurrentUser());
+    const fetchData = async () => {
+      try {
+        const userData = await appwriteService.getCurrentUser();
+        dispatch(currentUser({ userData }));
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchData();
   }, [dispatch]);
+
+  const roleID = auth?.userData?.$id
 
   // -- click to show product img -- 
   const changeImage = (imageUrl) => {
@@ -46,7 +55,7 @@ const ProductDetails = ({ params }) => {
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
-  
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,7 +102,7 @@ const ProductDetails = ({ params }) => {
       if (isItemInCart) {
         CommonToast("error", "Product already in the cart");
       } else {
-        dispatch(addToCart(clickedItemId, roleID));
+        dispatch(addToCart({clickedItemId, roleID}));
         dispatch(fetchCartData());
         try {
           if (cart) {
